@@ -1,0 +1,40 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Literal:</b>
+  <%= @kanji.literal %>
+</p>
+
+<p>
+  <b>Onyomi:</b>
+  <%= @kanji.onyomi %>
+</p>
+
+<p>
+  <b>Kunyomi:</b>
+  <%= @kanji.kunyomi %>
+</p>
+
+<p>
+  <b>Nanori:</b>
+  <%= @kanji.nanori %>
+</p>
+
+<p>
+  <b>Meaning:</b>
+  <%= @kanji.meaning %>
+</p>
+
+<p>
+  <b>Stroke:</b>
+  <%= @kanji.stroke %>
+</p>
+
+<p>
+  <b>Jlpt:</b>
+  <%= @kanji.jlpt %>
+</p>
+
+
+<%= link_to 'Edit', edit_kanji_path(@kanji) %> |
+<%= link_to 'Back', kanjis_path %>

@@ -1,0 +1,35 @@
+<h1>Listing kanjis</h1>
+
+<table>
+  <tr>
+    <th>Literal</th>
+    <th>Onyomi</th>
+    <th>Kunyomi</th>
+    <th>Nanori</th>
+    <th>Meaning</th>
+    <th>Stroke</th>
+    <th>Jlpt</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @kanjis.each do |kanji| %>
+  <tr>
+    <td><%= kanji.literal %></td>
+    <td><%= kanji.onyomi %></td>
+    <td><%= kanji.kunyomi %></td>
+    <td><%= kanji.nanori %></td>
+    <td><%= kanji.meaning %></td>
+    <td><%= kanji.stroke %></td>
+    <td><%= kanji.jlpt %></td>
+    <td><%= link_to 'Show', kanji %></td>
+    <td><%= link_to 'Edit', edit_kanji_path(kanji) %></td>
+    <td><%= link_to 'Destroy', kanji, confirm: 'Are you sure?', method: :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Kanji', new_kanji_path %>
