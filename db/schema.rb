@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120130062639) do
+ActiveRecord::Schema.define(:version => 20120130065433) do
 
   create_table "kanjis", :force => true do |t|
     t.string   "literal"
@@ -24,5 +24,7 @@ ActiveRecord::Schema.define(:version => 20120130062639) do
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
   end
+
+  add_index "kanjis", ["literal"], :name => "index_kanjis_on_literal"
 
 end
