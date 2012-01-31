@@ -2,15 +2,11 @@ namespace :kanji do
   desc "Import kanji from XML"
   task :import => :environment do
     
-    require 'nokogiri'
+    # Loads Kanji from XML and saves in one transaction to save time
     
-    STDOUT.sync = true
-    
-    puts 'Loading XML file...'
     doc = Nokogiri::XML( File.open( Rails.root.join('lib','assets') + 'kanjidic2.xml' ) )
-    puts 'XML file loaded'
     
-    count = 0
+    kanjis = []
     
     doc.xpath( '//character' ).each do |node|
     
@@ -31,15 +27,13 @@ namespace :kanji do
       node.xpath( "reading_meaning/rmgroup/meaning" ).each { |n| meanings.push n.content unless n.has_attribute? 'm_lang' }
       k.meaning = meanings.join( ', ' )
       k.stroke  = node.xpath( "misc/stroke_count" ).first.content.to_i
-      k.jlpt    = node.xpath( "misc/jlpt" ).first.content.to_i
+      k.jlpt    = node.xpath( "misc/jlpt" ).first.content.to_i unless node.xpath( "misc/jlpt" ).empty?
       
-      k.save
-      count += 1
-      puts count
+      kanjis.push k
       
     end
     
-    STDOUT.sync = false
+    ActiveRecord::Base.transaction { kanjis.each { |k| k.save } }
     
   end
 end
