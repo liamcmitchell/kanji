@@ -2,7 +2,7 @@ class KanjisController < ApplicationController
   # GET /kanjis
   # GET /kanjis.json
   def index
-    @kanjis = Kanji.all
+    @kanjis = Kanji.where("jlpt = ?", 4) #.where("jlpt NOT NULL") #.limit(100)
 
     respond_to do |format|
       format.html # index.html.erb
