@@ -13,7 +13,11 @@ class KanjisController < ApplicationController
   # GET /kanjis/1
   # GET /kanjis/1.json
   def show
-    @kanji = Kanji.find(params[:id])
+    if params[:id].is_a? Fixnum then
+      @kanji = Kanji.find(params[:id])
+    else
+      @kanji = Kanji.where("literal = ?", params[:id])
+    end
 
     respond_to do |format|
       format.html # show.html.erb
