@@ -16,7 +16,7 @@ class KanjisController < ApplicationController
     if params[:id].is_a? Fixnum then
       @kanji = Kanji.find(params[:id])
     else
-      @kanji = Kanji.where("literal = ?", params[:id])
+      @kanji = Kanji.where(:literal => params[:id].scan(/./))
     end
 
     respond_to do |format|

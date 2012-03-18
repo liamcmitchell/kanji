@@ -1,5 +1,7 @@
 /* Author: Liam Mitchell <mail@liam.geek.nz> */
 
 $(document).ready(function() {
-  console.log(App.Kanji.get('字'));
+  App.Kanji.get('春秋夏冬', function(){
+    App.Tester.start();
+  });
 });

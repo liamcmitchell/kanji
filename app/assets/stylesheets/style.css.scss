@@ -226,7 +226,7 @@ body { background:$grey image-url("bg.png"); }
 #control {}
 #title {font-weight:bold;float:left;}
 #user {float:right;}
-#canvas {width:960px;margin:auto;}
+#canvas {width:960px;margin:auto;opacity:0;}
 .box {
   margin:20px auto;
   background:$grey-light none;

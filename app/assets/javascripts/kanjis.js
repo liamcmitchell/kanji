@@ -3,24 +3,27 @@
 // You can use CoffeeScript in this file: http://jashkenas.github.com/coffee-script/
 
 var App = App || {};
+
 App.Kanji = {
   list: {},
-  get: function(kanji) {
-    k = this;
-    if (k.list[kanji] == null) {
-      $.ajax({
-        url:'/kanjis/' + kanji + '.json',
-        type:'GET',
-        success: function(data) {
-          if (data[0] != null)
-            k.list[data[0]['literal']] = data[0];
+  get: function(kanji, callback) {
+    K = this;
+    $.ajax({
+      url:'/kanjis/' + kanji + '.json',
+      type:'GET',
+      success: function(data) {
+        for(i=0; i<data.length; i++) {
+          K.list[data[i]['literal']] = data[i];
         }
-      });
-    }
-    console.log(k.list);
-    if (k.list.hasOwnProperty(kanji)) {
-      console.log('whaaaaat');
-      return k.list[kanji];
-    }
+        if (callback && typeof(callback) === 'function')
+          callback();
+      }
+    });
+  }
+};
+
+App.Tester = {
+  start: function() {
+    $('#canvas').animate({opacity:1}, 200);
   }
 };
