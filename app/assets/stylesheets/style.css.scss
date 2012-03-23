@@ -236,9 +236,22 @@ body { background:$grey image-url("bg.png"); }
   &.question {
     width:160px;
     min-height:180px;
+    font-size:24px;
     .kanji {
       text-align:center;
       font-size:150px;
+      line-height:1;
+    }
+  }
+  &.answer {
+    float:left;
+    width:100px;
+    margin:20px;
+    min-height:100px;
+    cursor: pointer;
+    .kanji {
+      text-align:center;
+      font-size:72px;
       line-height:1;
     }
   }
@@ -249,15 +262,23 @@ body { background:$grey image-url("bg.png"); }
     @include shadow($green);
   }
 }
-.options {
-  margin-top:20px;
-  .box {
-    float:left;
-    width:160px;
-    margin:20px;
-    min-height:100px;
-    cursor: pointer;
+.question > div, .answer > div {
+  display:none;
+}
+.question , .answer {
+  &.kanji .kanji,
+  &.meaning .meaning,
+  &.reading .onyomi,
+  &.reading .kunyomi {
+    display:block;
   }
+}
+.onyomi, .kunyomi {
+  font-size:120%;
+}
+.options {
+  margin:20px auto;
+  width:720px;
 }
 
 

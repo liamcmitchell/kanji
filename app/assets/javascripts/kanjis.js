@@ -3,7 +3,7 @@
 // You can use CoffeeScript in this file: http://jashkenas.github.com/coffee-script/
 
 var App = App || {};
-
+App.speed = 150;
 App.Kanji = {
   list: {},
   get: function(kanji, callback) {
@@ -26,25 +26,37 @@ App.Tester = {
   toLearn: [],
   previous: [],
   wait: false,
+  types:[
+    {question: 'kanji',   answer: 'meaning'}, 
+    {question: 'meaning', answer: 'kanji'}, 
+    {question: 'kanji',   answer: 'reading'}, 
+    {question: 'reading', answer: 'kanji'}
+  ],
   init: function() {
     T = this;
     
     // load kanji to learn
-    
+    if (App.User.loggedIn) {
+      
+    }
+    else {
+      // get basic set to play with
+      $.ajax({
+        url:'/kanjis.json',
+        type:'GET',
+        success: function(data) {
+          T.toLearn = data;
+          T.next();
+        }
+      });
+    }
+    console.log('ready');
     // set up keyboard listeners
     $(document).bind('keydown.1', function(){ T.select(1); });
     $(document).bind('keydown.2', function(){ T.select(2); });
     $(document).bind('keydown.3', function(){ T.select(3); });
     $(document).bind('keydown.4', function(){ T.select(4); });
     
-    $.ajax({
-      url:'/kanjis.json',
-      type:'GET',
-      success: function(data) {
-        T.toLearn = data;
-        T.next();
-      }
-    });
   },
   next: function() {
     T = this;
@@ -62,7 +74,7 @@ App.Tester = {
         t.testing = T.rand(t.options);
       }
     }
-    t.type = 'kanji-meaning';
+    t.type = T.rand(T.types);
     t.result = null;
     
     T.canvas = $('#canvas');
@@ -73,17 +85,18 @@ App.Tester = {
     
     options = $('<div class="options" />');
     for (i=0; i<t.options.length; i++) {
-      option = $(T.theme(t.options[i], 'option', t.type)).click(function() {
+      option = $(T.theme(t.options[i], 'answer', t.type)).click(function() {
         T.select(this);
       });
       options.append(option);
     }
     c.append(options);
     
-    c.delay(200).animate({opacity: 1}, 200);
+    setTimeout(function(){ 
+      App.Animate.show(c);
+      T.wait = false;
+    }, App.speed);
     
-    // ready
-    T.wait = false;
   },
   
   // returns random pieces from array
@@ -110,41 +123,56 @@ App.Tester = {
   
   // print in proper format
   theme: function(kanji, qa, type) {
-    html = '<div class="box ' + qa + '">';
-    if ((qa == 'question' && type == 'kanji-meaning') || (qa == 'answer' && type == 'meaning-kanji')) {
-      html = html + '<div class="kanji">' + kanji.literal + '</div>';
-    }
-    else {
-      html = html + kanji.meaning;
-      
-    }
-    html = html + '</div>';
+    html = '<div class="box ' + qa + ' ' + type[qa] + '">'
+      + '<div class="kanji">' + kanji.literal + '</div>'
+      + '<div class="meaning">' + kanji.meaning + '</div>'
+      + '<div class="onyomi">' + kanji.onyomi + '</div>'
+      + '<div class="kunyomi">' + kanji.kunyomi + '</div>'
+      + '</div>';
     return $(html).data('kanji', kanji);
   },
   
   // handler for answer selection
-  select: function(option) {
+  select: function(answer) {
     T = this;
     // keyboard
-    if (typeof(option) == 'number') {
-      option = T.canvas.find('.option')[option - 1];
+    if (typeof(answer) == 'number') {
+      answer = T.canvas.find('.answer')[answer - 1];
     }
-    option = $(option);
-    if (option.data('kanji') == T.current.testing) {
-      option.addClass('correct');
+    answer = $(answer);
+    // if correct
+    if (answer.data('kanji') == T.current.testing) {
+      answer.addClass('correct');
       if (T.current.result === null) T.current.result = 'correct';
       if (!T.wait) {
-        // wait prevents double action
-        T.wait = true;
         // record resultnext test
         
-        // fade out to next test
-        T.canvas.animate({opacity:0}, 200, function(){ T.next(); });
+        // wait prevents double action
+        T.wait = true;        
+        // animate to next test
+        setTimeout(function(){ 
+          App.Animate.hide(T.canvas, function(){ T.next(); 
+        }); }, App.speed);
       }
     }
+    // if incorrect
     else {
-      option.addClass('incorrect');
+      answer.addClass('incorrect');
       if (T.current.result === null) T.current.result = 'incorrect';
+      // toggle wrong cards display
+      if (answer.hasClass(T.current.type.answer)) answer.removeClass(T.current.type.answer).addClass(T.current.type.question);
+      else answer.removeClass(T.current.type.question).addClass(T.current.type.answer);
     }
   }
 };
+App.Animate = {
+  hide: function(object, callback) {
+    object = $(object);
+    object.css({position: 'relative'}).animate({opacity:0, left: '-100px'}, App.speed, 'swing', callback);
+  },
+  show: function(object, callback) {
+    object = $(object);
+    object.css({position: 'relative', left: '100px'}).animate({opacity: 1, left: '0'}, App.speed, 'linear', callback);
+  }
+};
+App.User = {};
