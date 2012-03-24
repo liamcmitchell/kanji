@@ -280,7 +280,13 @@ body { background:$grey image-url("bg.png"); }
   margin:20px auto;
   width:720px;
 }
-
+.button {
+  cursor:pointer;
+}
+.dialogue {
+  margin:0 auto;
+  width:360px;
+}
 
 /* =============================================================================
    Non-semantic helper classes

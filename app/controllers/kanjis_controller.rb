@@ -2,7 +2,12 @@ class KanjisController < ApplicationController
   # GET /kanjis
   # GET /kanjis.json
   def index
-    @kanjis = Kanji.where("jlpt = ?", 4) #.where("jlpt NOT NULL") #.limit(100)
+    #@kanjis = Kanji.where("jlpt = ?", 4) #.where("jlpt NOT NULL") #.limit(100)
+    if params[:jlpt].nil? then
+      @kanjis = Kanji.limit(50)
+    else
+      @kanjis = Kanji.where(:jlpt => params[:jlpt]).limit(50)
+    end
 
     respond_to do |format|
       format.html # index.html.erb
@@ -16,7 +21,7 @@ class KanjisController < ApplicationController
     if params[:id].is_a? Fixnum then
       @kanji = Kanji.find(params[:id])
     else
-      @kanji = Kanji.where(:literal => params[:id].scan(/./))
+      @kanji = Kanji.find_by_literal(params[:id].scan(/./))
     end
 
     respond_to do |format|
@@ -24,7 +29,7 @@ class KanjisController < ApplicationController
       format.json { render json: @kanji }
     end
   end
-
+=begin
   # GET /kanjis/new
   # GET /kanjis/new.json
   def new
@@ -84,4 +89,5 @@ class KanjisController < ApplicationController
       format.json { head :no_content }
     end
   end
+=end
 end

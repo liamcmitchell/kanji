@@ -33,33 +33,51 @@ App.Tester = {
     {question: 'reading', answer: 'kanji'}
   ],
   init: function() {
+    // don't start tester if not on home page
+    if (window.location.pathname !== '/') return false;
+    
     T = this;
     
-    // load kanji to learn
-    if (App.User.loggedIn) {
-      
-    }
-    else {
-      // get basic set to play with
-      $.ajax({
-        url:'/kanjis.json',
-        type:'GET',
-        success: function(data) {
-          T.toLearn = data;
-          T.next();
-        }
-      });
-    }
-    console.log('ready');
     // set up keyboard listeners
     $(document).bind('keydown.1', function(){ T.select(1); });
     $(document).bind('keydown.2', function(){ T.select(2); });
     $(document).bind('keydown.3', function(){ T.select(3); });
     $(document).bind('keydown.4', function(){ T.select(4); });
     
+    // load kanji to learn
+    if (App.User.loggedIn) {
+      T.start();
+    }
+    else {
+      // offer choices of level to start with
+      d = $('<div class="dialogue" />');
+      d.append(App.Theme.title('Select a JLPT level to start with or sign in'));
+      d.append(App.Theme.box('Level 1 (hardest)', ['button']).click(function(){ App.User.settings.jlpt.push(1); T.start(); }));
+      d.append(App.Theme.box('Level 2', ['button']).click(function(){ App.User.settings.jlpt.push(2); T.start(); }));
+      d.append(App.Theme.box('Level 3', ['button']).click(function(){ App.User.settings.jlpt.push(3); T.start(); }));
+      d.append(App.Theme.box('Level 4 (easiest)', ['button']).click(function(){ App.User.settings.jlpt.push(4); T.start(); }));
+      App.Canvas.show(d);
+    }
+
+  },
+  start: function() {
+    // once toLearn is filled, start testing
+    T = this;
+    T.load(T.next);    
+  },
+  load: function(callback) {
+    $.ajax({
+      url: '/kanjis.json',
+      type: 'GET',
+      data: App.User.settings,
+      success: function(data) {
+        T.toLearn = data;
+        if (callback && typeof(callback) === "function") callback();
+      }
+    });
   },
   next: function() {
-    T = this;
+    T = App.Tester;
     
     if (T.current) T.previous.push(T.current);
     
@@ -77,9 +95,8 @@ App.Tester = {
     t.type = T.rand(T.types);
     t.result = null;
     
-    T.canvas = $('#canvas');
-    c = T.canvas;
-    c.empty();
+    // empty jquery object to hold content we will eventually display on the canvas
+    c = $('<div class="test" />');
 
     c.append(T.theme(t.testing, 'question', t.type));
     
@@ -92,10 +109,7 @@ App.Tester = {
     }
     c.append(options);
     
-    setTimeout(function(){ 
-      App.Animate.show(c);
-      T.wait = false;
-    }, App.speed);
+    App.Canvas.show(c);
     
   },
   
@@ -123,18 +137,16 @@ App.Tester = {
   
   // print in proper format
   theme: function(kanji, qa, type) {
-    html = '<div class="box ' + qa + ' ' + type[qa] + '">'
-      + '<div class="kanji">' + kanji.literal + '</div>'
+    html = '<div class="kanji">' + kanji.literal + '</div>'
       + '<div class="meaning">' + kanji.meaning + '</div>'
       + '<div class="onyomi">' + kanji.onyomi + '</div>'
-      + '<div class="kunyomi">' + kanji.kunyomi + '</div>'
-      + '</div>';
-    return $(html).data('kanji', kanji);
+      + '<div class="kunyomi">' + kanji.kunyomi + '</div>';
+    return App.Theme.box(html, [qa, type[qa]]).data('kanji', kanji);
   },
   
   // handler for answer selection
   select: function(answer) {
-    T = this;
+    T = App.Tester;
     // keyboard
     if (typeof(answer) == 'number') {
       answer = T.canvas.find('.answer')[answer - 1];
@@ -150,9 +162,7 @@ App.Tester = {
         // wait prevents double action
         T.wait = true;        
         // animate to next test
-        setTimeout(function(){ 
-          App.Animate.hide(T.canvas, function(){ T.next(); 
-        }); }, App.speed);
+        setTimeout(T.next, App.speed);
       }
     }
     // if incorrect
@@ -165,6 +175,32 @@ App.Tester = {
     }
   }
 };
+App.Theme = {
+  box: function(content, classes) {
+    if (classes) classes = classes.join(' ');
+    else classes = '';
+    return $('<div class="box ' + classes + '"></div>').append(content);
+  },
+  title: function(content, classes) {
+    if (classes) classes = classes.join(' ');
+    else classes = '';
+    return $('<h2 class="' + classes + '"></h2>').append(content);
+  }
+};
+App.Canvas = {
+  show: function(content) {
+    c = $('#canvas');
+    App.Tester.wait = true;
+    App.Animate.hide(c, function(){
+      c.empty().append(content);
+      setTimeout(function(){
+        App.Tester.wait = false;
+        App.Animate.show(c);  
+      }, App.speed);
+    });
+  }
+};
+// remove animate later if only used for canvas transition
 App.Animate = {
   hide: function(object, callback) {
     object = $(object);
@@ -172,7 +208,12 @@ App.Animate = {
   },
   show: function(object, callback) {
     object = $(object);
-    object.css({position: 'relative', left: '100px'}).animate({opacity: 1, left: '0'}, App.speed, 'linear', callback);
+    object.css({position: 'relative', left: '100px'}).animate({opacity: 1, left: '0'}, App.speed, 'swing', callback);
   }
 };
-App.User = {};
+App.User = {
+  loggedIn: false,
+  settings: {
+    jlpt: []
+  }
+};
