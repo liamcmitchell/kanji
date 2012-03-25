@@ -2,13 +2,12 @@ class KanjisController < ApplicationController
   # GET /kanjis
   # GET /kanjis.json
   def index
-    #@kanjis = Kanji.where("jlpt = ?", 4) #.where("jlpt NOT NULL") #.limit(100)
-    if params[:jlpt].nil? then
-      @kanjis = Kanji.limit(50)
-    else
-      @kanjis = Kanji.where(:jlpt => params[:jlpt]).limit(50)
-    end
-
+    not_in = params[:not_in].nil? || params[:not_in].empty? ? '' : params[:not_in].scan(/./)
+    limit = params[:limit].nil? ? 50 : [params[:limit].to_i, 50].min
+    random = params[:sort] == 'random' ? 'RANDOM()' : ''
+    @kanjis = Kanji.order(random).where({:jlpt => params[:jlpt]}).where('literal not in (?)', not_in).limit(limit)
+    #@var = params[:sort] # for debugging
+    
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @kanjis }

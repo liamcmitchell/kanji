@@ -1,5 +1,5 @@
-<h1>Listing kanjis</h1>
-
+<h1>Listing kanji</h1>
+<%= if @var then simple_format @var.to_yaml end %>
 <table>
   <tr>
     <th>Literal</th>
@@ -9,9 +9,6 @@
     <th>Meaning</th>
     <th>Stroke</th>
     <th>Jlpt</th>
-    <th></th>
-    <th></th>
-    <th></th>
   </tr>
 
 <% @kanjis.each do |kanji| %>
@@ -23,13 +20,6 @@
     <td><%= kanji.meaning %></td>
     <td><%= kanji.stroke %></td>
     <td><%= kanji.jlpt %></td>
-    <td><%= link_to 'Show', kanji %></td>
-    <td><%= link_to 'Edit', edit_kanji_path(kanji) %></td>
-    <td><%= link_to 'Destroy', kanji, confirm: 'Are you sure?', method: :delete %></td>
   </tr>
 <% end %>
 </table>
-
-<br />
-
-<%= link_to 'New Kanji', new_kanji_path %>
