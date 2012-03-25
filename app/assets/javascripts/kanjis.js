@@ -38,6 +38,9 @@ App.Tester = {
     
     T = this;
     
+    // set canvas
+    App.Canvas.canvas = $('#canvas');
+    
     // set up keyboard listeners
     $(document).bind('keydown.1', function(){ T.select(1); });
     $(document).bind('keydown.2', function(){ T.select(2); });
@@ -98,11 +101,11 @@ App.Tester = {
     // empty jquery object to hold content we will eventually display on the canvas
     c = $('<div class="test" />');
 
-    c.append(T.theme(t.testing, 'question', t.type));
+    c.append(App.Theme.kanji(t.testing, 'question', t.type));
     
     options = $('<div class="options" />');
     for (i=0; i<t.options.length; i++) {
-      option = $(T.theme(t.options[i], 'answer', t.type)).click(function() {
+      option = $(App.Theme.kanji(t.options[i], 'answer', t.type)).click(function() {
         T.select(this);
       });
       options.append(option);
@@ -135,23 +138,20 @@ App.Tester = {
     return array;
   },
   
-  // print in proper format
-  theme: function(kanji, qa, type) {
-    html = '<div class="kanji">' + kanji.literal + '</div>'
-      + '<div class="meaning">' + kanji.meaning + '</div>'
-      + '<div class="onyomi">' + kanji.onyomi + '</div>'
-      + '<div class="kunyomi">' + kanji.kunyomi + '</div>';
-    return App.Theme.box(html, [qa, type[qa]]).data('kanji', kanji);
-  },
-  
   // handler for answer selection
   select: function(answer) {
     T = App.Tester;
+    
     // keyboard
     if (typeof(answer) == 'number') {
-      answer = T.canvas.find('.answer')[answer - 1];
+      answer = App.Canvas.canvas.find('.answer')[answer - 1];
     }
+    
     answer = $(answer);
+    
+    // if no answer quietly fail
+    if (!answer.length) return false;
+    
     // if correct
     if (answer.data('kanji') == T.current.testing) {
       answer.addClass('correct');
@@ -185,11 +185,27 @@ App.Theme = {
     if (classes) classes = classes.join(' ');
     else classes = '';
     return $('<h2 class="' + classes + '"></h2>').append(content);
-  }
+  },
+  kanji: function(kanji, qa, type) {
+    // make verb stem bold
+    kunyomi = kanji.kunyomi.split(', ');
+    for (var i = 0; i < kunyomi.length; i++) {
+      if (kunyomi[i].search(/\./) > 0) {
+        pieces = kunyomi[i].split('.');
+        kunyomi[i] =  pieces[0] + '<span class="not-reading">' + pieces[1] + '</span>';
+      }
+    }
+    html = '<div class="kanji">' + kanji.literal + '</div>'
+      + '<div class="meaning">' + kanji.meaning + '</div>'
+      + '<div class="onyomi">' + kanji.onyomi + '</div>'
+      + '<div class="kunyomi">' + (kunyomi.join(', ') || '') + '</div>';
+    return App.Theme.box(html, [qa, type[qa]]).data('kanji', kanji);
+  },
 };
 App.Canvas = {
+  canvas: null, // set on init
   show: function(content) {
-    c = $('#canvas');
+    c = this.canvas;
     App.Tester.wait = true;
     App.Animate.hide(c, function(){
       c.empty().append(content);
