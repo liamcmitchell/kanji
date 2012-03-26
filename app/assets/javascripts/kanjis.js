@@ -4,33 +4,39 @@
 
 var App = App || {};
 App.speed = 150;
-App.Kanji = {
+App.testingCardsSize = 7;
+App.timesToClear = 1;
+App.Card = {
   list: {},
-  get: function(kanji, callback) {
+  // return references to master list
+  load: function(list) {
     K = this;
-    $.ajax({
-      url:'/kanjis/' + kanji + '.json',
-      type:'GET',
-      success: function(data) {
-        for (i=0; i<data.length; i++) {
-          K.list[data[i]['literal']] = data[i];
-        }
-        if (callback && typeof(callback) === 'function')
-          callback();
-      }
+    out = [];
+    for (i=0; i<list.length; i++) {
+      K.list[list[i]['literal']] = list[i];
+      out.push(K.list[list[i]['literal']]);
+    }
+    return out;
+  },
+  literals: function(list) {
+    out = [];
+    $.each(list, function(index, value){
+      if (value && value.literal) out.push(value.literal);
     });
+    return out;
   }
 };
 
 App.Tester = {
-  toLearn: [],
-  previous: [],
+  testingCards: [],
+  learntCards: [],
+  previousTests: [],
   wait: false,
-  types:[
-    {question: 'kanji',   answer: 'meaning'}, 
-    {question: 'meaning', answer: 'kanji'}, 
-    {question: 'kanji',   answer: 'reading'}, 
-    {question: 'reading', answer: 'kanji'}
+  testTypes:[
+    {id: 1, question: 'literal',   answer: 'meaning'}, 
+    {id: 2, question: 'meaning', answer: 'literal'}, 
+    {id: 3, question: 'literal',   answer: 'reading'}, 
+    {id: 4, question: 'reading', answer: 'literal'}
   ],
   init: function() {
     // don't start tester if not on home page
@@ -47,7 +53,7 @@ App.Tester = {
     $(document).bind('keydown.3', function(){ T.select(3); });
     $(document).bind('keydown.4', function(){ T.select(4); });
     
-    // load kanji to learn
+    // load card to learn
     if (App.User.loggedIn) {
       T.start();
     }
@@ -64,17 +70,23 @@ App.Tester = {
 
   },
   start: function() {
-    // once toLearn is filled, start testing
+    // once testingCards is filled, start testing
     T = this;
     T.load(T.next);    
   },
   load: function(callback) {
+    T = this;
     $.ajax({
       url: '/kanjis.json',
       type: 'GET',
-      data: App.User.settings,
+      data: {
+        jlpt: App.User.settings.jlpt,
+        not_in: App.Card.literals(T.testingCards).join('') + App.Card.literals(T.learntCards).join(''),
+        limit: App.testingCardsSize - T.testingCards.length,
+        sort: 'random',
+        },
       success: function(data) {
-        T.toLearn = data;
+        T.testingCards = T.testingCards.concat(App.Card.load(data));
         if (callback && typeof(callback) === "function") callback();
       }
     });
@@ -82,30 +94,37 @@ App.Tester = {
   next: function() {
     T = App.Tester;
     
-    if (T.current) T.previous.push(T.current);
+    if (T.testing) T.previousTests.push(T.testing);
     
     // Create new test (t)
-    T.current = {};
-    t = T.current;
-    t.options = T.rand(T.toLearn, 4);
-    t.testing = T.rand(t.options);
+    T.testing = {};
+    t = T.testing;
+    t.options = T.rand(T.testingCards, 4);
+    t.card = T.rand(t.options);
     // don't test twice
-    if (T.previous.length) {
-      while (t.testing == T.previous[T.previous.length - 1].testing) { 
-        t.testing = T.rand(t.options);
+    if (T.previousTests.length) {
+      while (t.card == T.previousTests[T.previousTests.length - 1].testing) { 
+        t.card = T.rand(t.options);
       }
     }
-    t.type = T.rand(T.types);
+    // choose test type from remaining choices
+    if (!t.card.hasOwnProperty('results')) t.card.results = {};
+    choices = [];
+    $.each(T.testTypes, function(index, value){
+      if (!t.card.results.hasOwnProperty(value.id)) t.card.results[value.id] = 0;
+      if (t.card.results[value.id] < App.timesToClear) choices.push(value);
+    });
+    t.type = T.rand(choices);
     t.result = null;
     
     // empty jquery object to hold content we will eventually display on the canvas
     c = $('<div class="test" />');
 
-    c.append(App.Theme.kanji(t.testing, 'question', t.type));
+    c.append(App.Theme.card(t.card, 'question', t.type));
     
     options = $('<div class="options" />');
     for (i=0; i<t.options.length; i++) {
-      option = $(App.Theme.kanji(t.options[i], 'answer', t.type)).click(function() {
+      option = $(App.Theme.card(t.options[i], 'answer', t.type)).click(function() {
         T.select(this);
       });
       options.append(option);
@@ -141,6 +160,7 @@ App.Tester = {
   // handler for answer selection
   select: function(answer) {
     T = App.Tester;
+    t = T.testing;
     
     // keyboard
     if (typeof(answer) == 'number') {
@@ -152,26 +172,57 @@ App.Tester = {
     // if no answer quietly fail
     if (!answer.length) return false;
     
-    // if correct
-    if (answer.data('kanji') == T.current.testing) {
+    // if correct card selected (may not be 1st guess)
+    if (answer.data('card') == t.card) {
       answer.addClass('correct');
-      if (T.current.result === null) T.current.result = 'correct';
+      
+      // wait prevents double action while in transition
       if (!T.wait) {
-        // record resultnext test
+        T.wait = true;
         
-        // wait prevents double action
-        T.wait = true;        
-        // animate to next test
+        // if correct card was selected first
+        if (t.result === null) {
+          // mark success
+          t.result = 'correct';
+          t.card.results[t.type.id] += 1;
+          
+          // if card has passed requirements, record card as learnt
+          learnt = true;
+          console.log(T.testTypes);
+          console.log(t.card.results);
+          $.each(T.testTypes, function(index, value){
+            if (t.card.results[value.id] < App.timesToClear) learnt = false;
+          });
+          if (learnt) {
+            // remove from testingCards
+            T.testingCards.splice(T.testingCards.indexOf(t.card), 1);
+            T.learntCards.push(t.card);
+            // post to server
+            
+            // show user
+            $('#learnt').append(t.card.literal).show();
+            // get new cards
+            T.load();
+          }
+        }
+        
+        // continue to next test
         setTimeout(T.next, App.speed);
       }
     }
+    
     // if incorrect
     else {
+      if (t.result === null) t.result = 'incorrect';
       answer.addClass('incorrect');
-      if (T.current.result === null) T.current.result = 'incorrect';
+      
+      // reset results counter
+      t.card.results = {};
+      
       // toggle wrong cards display
-      if (answer.hasClass(T.current.type.answer)) answer.removeClass(T.current.type.answer).addClass(T.current.type.question);
-      else answer.removeClass(T.current.type.question).addClass(T.current.type.answer);
+      if (answer.hasClass(t.type.answer)) answer.removeClass(t.type.answer).addClass(t.type.question);
+      else answer.removeClass(t.type.question).addClass(t.type.answer);
+      
     }
   }
 };
@@ -186,20 +237,20 @@ App.Theme = {
     else classes = '';
     return $('<h2 class="' + classes + '"></h2>').append(content);
   },
-  kanji: function(kanji, qa, type) {
+  card: function(card, qa, type) {
     // make verb stem bold
-    kunyomi = kanji.kunyomi.split(', ');
+    kunyomi = card.kunyomi.split(', ');
     for (var i = 0; i < kunyomi.length; i++) {
       if (kunyomi[i].search(/\./) > 0) {
         pieces = kunyomi[i].split('.');
         kunyomi[i] =  pieces[0] + '<span class="not-reading">' + pieces[1] + '</span>';
       }
     }
-    html = '<div class="kanji">' + kanji.literal + '</div>'
-      + '<div class="meaning">' + kanji.meaning + '</div>'
-      + '<div class="onyomi">' + kanji.onyomi + '</div>'
+    html = '<div class="literal">' + card.literal + '</div>'
+      + '<div class="meaning">' + card.meaning + '</div>'
+      + '<div class="onyomi">' + card.onyomi + '</div>'
       + '<div class="kunyomi">' + (kunyomi.join(', ') || '') + '</div>';
-    return App.Theme.box(html, [qa, type[qa]]).data('kanji', kanji);
+    return App.Theme.box(html, [qa, type[qa]]).data('card', card);
   },
 };
 App.Canvas = {

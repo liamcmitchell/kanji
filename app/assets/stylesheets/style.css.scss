@@ -224,6 +224,7 @@ body { background:$grey image-url("bg.png"); }
 #control {}
 #title {font-weight:bold;float:left;}
 #user {float:right;}
+#learnt {text-align:center;display:none;}
 #canvas {width:960px;margin:auto;opacity:0;}
 .box {
   margin:20px auto;
@@ -235,7 +236,7 @@ body { background:$grey image-url("bg.png"); }
     width:160px;
     min-height:180px;
     font-size:24px;
-    .kanji {
+    .literal {
       text-align:center;
       font-size:150px;
       line-height:1;
@@ -247,7 +248,7 @@ body { background:$grey image-url("bg.png"); }
     margin:20px;
     min-height:100px;
     cursor: pointer;
-    .kanji {
+    .literal {
       text-align:center;
       font-size:72px;
       line-height:1;
@@ -264,7 +265,7 @@ body { background:$grey image-url("bg.png"); }
   display:none;
 }
 .question , .answer {
-  &.kanji .kanji,
+  &.literal .literal,
   &.meaning .meaning,
   &.reading .onyomi,
   &.reading .kunyomi {
