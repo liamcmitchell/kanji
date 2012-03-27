@@ -8,6 +8,7 @@ var App = function() {
   var A = this;
   
   // set and localise variables
+  var state = '';           // keeps track of what screen we are on
   var speed = 150;          // base unit for animation and pause speed
   var testingCardsSize = 7; // number of cards that will be tested at the same time
   var timesToClear = 1;     // times each test type needs to be correct before card is learnt
@@ -19,9 +20,9 @@ var App = function() {
   var currentTest = null;
   var previousTests = [];
   var testTypes = [
-    {id: 1, question: 'literal',   answer: 'meaning'}, 
+    {id: 1, question: 'literal', answer: 'meaning'}, 
     {id: 2, question: 'meaning', answer: 'literal'}, 
-    {id: 3, question: 'literal',   answer: 'reading'}, 
+    {id: 3, question: 'literal', answer: 'reading'}, 
     {id: 4, question: 'reading', answer: 'literal'}
   ];
   var user = {
@@ -45,12 +46,57 @@ var App = function() {
     $(document).bind('keydown.3', function(){ select(3); });
     $(document).bind('keydown.4', function(){ select(4); });
     
-    // load card to learn
+    // figure out if user exists
+    
     if (user.loggedIn) {
-      start();
+      $('#user').append('<a href="#">Username</a>').click(function(){ settingsDialogue(); });
     }
     else {
-      // offer choices of level to start with
+      $('#user').append('<a href="#">Sign in or create account</a>').click(function(){ signInDialogue(); });
+    }
+    
+    start();
+
+  };
+  
+  // settings dialogue
+  function settingsDialogue() {
+    if (state == 'settings') return false;
+    state = 'settings';
+    d = $('<div class="dialogue" />');
+    d.append(themeTitle('Settings'));
+    d.append(themeBox('Multiple settings available here'));
+    d.append(themeBox('OK, done now...', ['button']).click(function(){ start(); }));
+    canvasShow(d);
+    return false;
+  }
+  
+  // sign in/create account form
+  function signInDialogue() {
+    if (state == 'signin') return false;
+    state = 'signin';
+    d = $('<div class="dialogue" />');
+    d.append(themeTitle('Sign in or create an account'));
+    d.append(themeBox('Sign in form'));
+    d.append(themeBox('Create account form'));
+    d.append(themeBox('Actually, no thanks...', ['button']).click(function(){ start(); }));
+    canvasShow(d);
+    return false;
+  }
+  
+  // start
+  function start() {
+    state = 'testing';
+    // reshow test if testing has already started
+    if (currentTest) {
+      canvasShow(buildTest(currentTest));
+    }
+    // start if enough info is available
+    else if (user.settings.jlpt.length) {
+      load(function(){ next(); });
+    }
+    // otherwise get info needed to start
+    else {
       d = $('<div class="dialogue" />');
       d.append(themeTitle('Select a JLPT level to start with or sign in'));
       d.append(themeBox('Level 1 (hardest)', ['button']).click(function(){ user.settings.jlpt.push(1); start(); }));
@@ -59,12 +105,6 @@ var App = function() {
       d.append(themeBox('Level 4 (easiest)', ['button']).click(function(){ user.settings.jlpt.push(4); start(); }));
       canvasShow(d);
     }
-
-  };
-  
-  // start
-  function start() {
-    load(function(){ next(); });
   }
   
   // fill up testingCards
@@ -100,9 +140,14 @@ var App = function() {
     
     if (currentTest) previousTests.push(currentTest);
     
-    // Create new test (t)
-    currentTest = {};
-    t = currentTest;
+    currentTest = newTest();
+    
+    canvasShow(buildTest(currentTest));
+  };
+  
+  // make new test
+  function newTest() {
+    t = {};
     t.options = random(testingCards, 4);
     t.card = random(t.options);
     // don't test twice
@@ -121,23 +166,26 @@ var App = function() {
     t.type = random(choices);
     t.result = null;
     
+    return t;
+  };
+  
+  // build test dom
+  function buildTest(test) {
     // empty jquery object to hold content we will eventually display on the canvas
-    c = $('<div class="test" />');
+    d = $('<div class="test" />');
     // add question card
-    c.append(themeCard(t.card, 'question', t.type));
+    d.append(themeCard(test.card, 'question', test.type));
     // add options to choose from
     options = $('<div class="options" />');
-    for (i=0; i<t.options.length; i++) {
-      option = $(themeCard(t.options[i], 'answer', t.type)).click(function() {
+    for (i=0; i<test.options.length; i++) {
+      option = $(themeCard(test.options[i], 'answer', test.type)).click(function() {
         select($(this));
       });
       options.append(option);
     }
-    c.append(options);
+    d.append(options);
     
-    // finally show new test on the canvas
-    canvasShow(c);
-    
+    return d;
   };
   
   // returns random pieces from array
@@ -176,44 +224,42 @@ var App = function() {
     // handle keyboard selection 
     if (typeof(answer) == 'number') answer = canvas.find('.answer').eq(answer - 1);
     
-    // if no answer quietly fail
-    if (!answer.length) return false;
+    // if wait lock or no answer quietly fail
+    if (wait || !answer.length) return false;
     
     // if correct card was selected (may not be 1st guess)
     if (answer.data('card') == t.card) {
       answer.addClass('correct');
       
-      // lock prevents double action while in transition
-      if (!wait) {
-        wait = true;
+      // lock prevents further action once correct answer is selected
+      wait = true;
+      
+      // if correct card was selected first
+      if (t.result === null) {
+        // mark success
+        t.result = 'correct';
+        t.card.results[t.type.id] += 1;
         
-        // if correct card was selected first
-        if (t.result === null) {
-          // mark success
-          t.result = 'correct';
-          t.card.results[t.type.id] += 1;
+        // if card has passed requirements, record card as learnt
+        learnt = true;
+        $.each(testTypes, function(index, value){
+          if (t.card.results[value.id] < timesToClear) learnt = false;
+        });
+        if (learnt) {
+          // remove from testingCards
+          testingCards.splice(testingCards.indexOf(t.card), 1);
+          learntCards.push(t.card);
+          // post to server
           
-          // if card has passed requirements, record card as learnt
-          learnt = true;
-          $.each(testTypes, function(index, value){
-            if (t.card.results[value.id] < timesToClear) learnt = false;
-          });
-          if (learnt) {
-            // remove from testingCards
-            testingCards.splice(testingCards.indexOf(t.card), 1);
-            learntCards.push(t.card);
-            // post to server
-            
-            // show user
-            $('#learnt').append(t.card.literal).show();
-            // get new cards
-            load();
-          }
+          // show user kanji that has been learnt
+          $('#learnt').append(t.card.literal).show();
+          // get new cards
+          load();
         }
-        
-        // continue to next test
-        setTimeout(function(){ next(); }, speed);
       }
+      
+      // continue to next test
+      setTimeout(function(){ next(); }, speed);
     }
     
     // if incorrect
