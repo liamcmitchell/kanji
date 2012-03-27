@@ -13,6 +13,9 @@
 <body>
 <div id="page">
   <div id="control" class="clearfix"><div id="title">Kanji Practice</div><div id="user"></div><div id="learnt"></div></div>
+  <% if current_user %>
+    <a href="/signout">Sign out</a>
+  <% end %>
   <%= yield %>
 </div>
 </body>
