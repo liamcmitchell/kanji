@@ -2,6 +2,6 @@
 
 $(document).ready(function() {
   
-  App.Tester.init();
-  console.log(App);
+  App();
+  
 });
