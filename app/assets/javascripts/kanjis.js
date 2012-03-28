@@ -8,12 +8,15 @@ var App = function() {
   var A = this;
   
   // set and localise variables
+  var debug = true;         // for development
   var state = '';           // keeps track of what screen we are on
   var speed = 150;          // base unit for animation and pause speed
   var testingCardsSize = 7; // number of cards that will be tested at the same time
   var timesToClear = 1;     // times each test type needs to be correct before card is learnt
   var wait = false;         // lock
-  var canvas = null;        // container for app
+  var $canvas = null;       // container for app
+  var $login = null;        // login form
+  var $register = null;     // register form
   var cards = {};           // holder for all cards used
   var testingCards = [];    // cards currently being tested
   var learntCards = [];     // cards tested and learnt
@@ -25,20 +28,17 @@ var App = function() {
     {id: 3, question: 'literal', answer: 'reading'}, 
     {id: 4, question: 'reading', answer: 'literal'}
   ];
-  var user = {
-    loggedIn: false,
-    settings: {
-      jlpt: []
-    }
-  }
+  var user = {};
   
   // init
   function init() {
     // don't start tester if not on home page
     if (window.location.pathname !== '/') return false;
     
-    // set canvas
-    canvas = $('#canvas');
+    // cache dom
+    $canvas = $('#canvas');
+    $signin = $('#signin').detach().submit(function(){ signInSubmit($(this)); return false; });
+    $register = $('#register').detach().submit(function(){ registerSubmit(this); return false; });;
     
     // set up keyboard listeners
     $(document).bind('keydown.1', function(){ select(1); });
@@ -46,18 +46,29 @@ var App = function() {
     $(document).bind('keydown.3', function(){ select(3); });
     $(document).bind('keydown.4', function(){ select(4); });
     
-    // figure out if user exists
-    
-    if (user.loggedIn) {
-      $('#user').append('<a href="#">Username</a>').click(function(){ settingsDialogue(); });
+    // load user data if included on page
+    if ($('#user-json').length) {
+      initUser(jQuery.parseJSON($('#user-json').html()));
+      $('#user-json').remove();
     }
     else {
-      $('#user').append('<a href="#">Sign in or create account</a>').click(function(){ signInDialogue(); });
+      initUser({});
     }
     
     start();
 
   };
+  
+  // save given user object and update related objects
+  function initUser(userObject) {
+    user = userObject;
+    if (user.uid) {
+      $('#user').html('<a href="#">' + user.name + '</a>').click(function(){ settingsDialogue(); });
+    }
+    else {
+      $('#user').html('<a href="#">Sign in or create account</a>').click(function(){ signInDialogue(); });
+    }
+  }
   
   // settings dialogue
   function settingsDialogue() {
@@ -66,9 +77,33 @@ var App = function() {
     d = $('<div class="dialogue" />');
     d.append(themeTitle('Settings'));
     d.append(themeBox('Multiple settings available here'));
-    d.append(themeBox('OK, done now...', ['button']).click(function(){ start(); }));
+    d.append(themeBox('Sign out', ['button']).click(function(){ signOut(); }));
+    d.append(themeBox('Back to learning!', ['button']).click(function(){ start(); }));
     canvasShow(d);
     return false;
+  }
+  
+  // sign out
+  function signOut() {
+    $.ajax({
+      url: '/signout.json',
+      type: 'GET',
+      success: function(data) {
+        if (data === true) {
+          // clear all saved data
+          cards = {};
+          testingCards = [];
+          learntCards = [];
+          currentTest = null;
+          previousTests = [];
+          // replace user with empty object
+          initUser({});
+          // back to start
+          start();
+        }
+        if (typeof(callback) === "function") callback();
+      }
+    });
   }
   
   // sign in/create account form
@@ -76,13 +111,36 @@ var App = function() {
     if (state == 'signin') return false;
     state = 'signin';
     d = $('<div class="dialogue" />');
-    d.append(themeTitle('Sign in or create an account'));
-    d.append(themeBox('Sign in form'));
-    d.append(themeBox('Create account form'));
+    d.append(themeTitle('Sign in'));
+    d.append(themeBox($signin));
+    d.append(themeTitle('or create an account'));
+    d.append(themeBox($register));
     d.append(themeBox('Actually, no thanks...', ['button']).click(function(){ start(); }));
     canvasShow(d);
     return false;
-  }
+  };
+  
+  // sign in submit handler
+  function signInSubmit($form) {
+    $.ajax({
+      url: $form.attr('action'),
+      type: $form.attr('method'),
+      data: $form.serialize() + '&format=json', // .json path doesn't work with oath identity
+      success: function(data) {
+        log(data);
+        // if signed in
+        if (data.uid) {
+          initUser(data);
+          start();
+        }
+        // if error
+        else {
+          
+        }
+        if (typeof(callback) === "function") callback();
+      }
+    });
+  };
   
   // start
   function start() {
@@ -92,17 +150,17 @@ var App = function() {
       canvasShow(buildTest(currentTest));
     }
     // start if enough info is available
-    else if (user.settings.jlpt.length) {
+    else if (jlptLevels()) {
       load(function(){ next(); });
     }
     // otherwise get info needed to start
     else {
       d = $('<div class="dialogue" />');
       d.append(themeTitle('Select a JLPT level to start with or sign in'));
-      d.append(themeBox('Level 1 (hardest)', ['button']).click(function(){ user.settings.jlpt.push(1); start(); }));
-      d.append(themeBox('Level 2', ['button']).click(function(){ user.settings.jlpt.push(2); start(); }));
-      d.append(themeBox('Level 3', ['button']).click(function(){ user.settings.jlpt.push(3); start(); }));
-      d.append(themeBox('Level 4 (easiest)', ['button']).click(function(){ user.settings.jlpt.push(4); start(); }));
+      d.append(themeBox('Level 1 (hardest)', ['button']).click(function(){ jlptLevels(1); start(); }));
+      d.append(themeBox('Level 2', ['button']).click(function(){ jlptLevels(2); start(); }));
+      d.append(themeBox('Level 3', ['button']).click(function(){ jlptLevels(3); start(); }));
+      d.append(themeBox('Level 4 (easiest)', ['button']).click(function(){ jlptLevels(4); start(); }));
       canvasShow(d);
     }
   }
@@ -120,7 +178,7 @@ var App = function() {
         },
       success: function(data) {
         testingCards = testingCards.concat(storeCards(data));
-        if (callback && typeof(callback) === "function") callback();
+        if (typeof(callback) === "function") callback();
       }
     });
   };
@@ -218,18 +276,18 @@ var App = function() {
   }
   
   // handler for answer selection
-  function select(answer) {
+  function select($answer) {
     t = currentTest;
     
     // handle keyboard selection 
-    if (typeof(answer) == 'number') answer = canvas.find('.answer').eq(answer - 1);
+    if (typeof($answer) == 'number') $answer = $canvas.find('.answer').eq($answer - 1);
     
     // if wait lock or no answer quietly fail
-    if (wait || !answer.length) return false;
+    if (wait || !$answer.length) return false;
     
     // if correct card was selected (may not be 1st guess)
-    if (answer.data('card') == t.card) {
-      answer.addClass('correct');
+    if ($answer.data('card') == t.card) {
+      $answer.addClass('correct');
       
       // lock prevents further action once correct answer is selected
       wait = true;
@@ -265,14 +323,14 @@ var App = function() {
     // if incorrect
     else {
       if (t.result === null) t.result = 'incorrect';
-      answer.addClass('incorrect');
+      $answer.addClass('incorrect');
       
       // reset results counter
       t.card.results = {};
       
       // toggle wrong cards display
-      if (answer.hasClass(t.type.answer)) answer.removeClass(t.type.answer).addClass(t.type.question);
-      else answer.removeClass(t.type.question).addClass(t.type.answer);
+      if ($answer.hasClass(t.type.answer)) $answer.removeClass(t.type.answer).addClass(t.type.question);
+      else $answer.removeClass(t.type.question).addClass(t.type.answer);
       
     }
   };
@@ -311,11 +369,11 @@ var App = function() {
   // show new content on canvas
   function canvasShow(content) {
     wait = true;
-    hide(canvas, function(){
-      canvas.empty().append(content);
+    hide($canvas, function(){
+      $canvas.empty().append(content);
       setTimeout(function(){
         wait = false;
-        show(canvas);  
+        show($canvas);  
       }, speed);
     });
   };
@@ -329,6 +387,30 @@ var App = function() {
   function show(object, callback) {
     object.css({position: 'relative', left: '100px'}).animate({opacity: 1, left: '0'}, speed, 'swing', callback);
   };
+  
+  // return array of levels or nil if none, set levels if argument provided
+  function jlptLevels(levels) {
+    if (!user.settings) user.settings = {};
+    if (!user.settings.jlpt) user.settings.jlpt = [];
+    
+    if (typeof(levels) === 'number') {
+      user.settings.jlpt.push(levels);
+    }
+    else if (typeof(levels) === 'array') {
+      user.settings.jlpt = levels;
+    }
+    if (user.settings.jlpt.length) {
+      return user.settings.jlpt;
+    }
+    else return null;
+  }
+  
+  // debugging function
+  function log(data) {
+    if (debug) {
+      console.log(data);
+    }
+  }
   
   init();
   

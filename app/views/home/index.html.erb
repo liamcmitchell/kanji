@@ -1,8 +1,7 @@
-<%= flash[:notice] %>
-
 <div id="canvas"></div>
 
-  <%= form_tag "/auth/identity/callback" do %>
+<div class="app-data">
+  <%= form_tag "/auth/identity/callback", :id => "signin" do %>
     <div class="field">
       <%= label_tag :auth_key, "Email" %><br>
       <%= text_field_tag :auth_key %>
@@ -14,7 +13,7 @@
     <div class="actions"><%= submit_tag "Login" %></div>
   <% end %>
   
-  <%= form_tag "/auth/identity/register" do %>
+  <%= form_tag "/auth/identity/register", :id => "register" do %>
     <% if @identity && @identity.errors.any? %>
       <div class="error_messages">
         <h2><%= pluralize(@identity.errors.count, "error") %> prohibited this account from being saved:</h2>
@@ -43,3 +42,4 @@
     </div>
     <div class="actions"><%= submit_tag "Register" %></div>
   <% end %>
+</div>

@@ -5,7 +5,7 @@ class SessionsController < ApplicationController
     session[:user_id] = user.id
     respond_to do |format|
       format.html { redirect_to root_url, :notice => "Signed in" }
-      format.json { render json: true }
+      format.json { render json: user.as_json }
     end
   end
   
