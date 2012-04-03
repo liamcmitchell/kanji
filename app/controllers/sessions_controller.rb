@@ -1,4 +1,13 @@
 class SessionsController < ApplicationController
+  # sign in page (called on sign in failure)
+  def new
+    respond_to do |format|
+      format.html
+      # if called by ajax, just provide a simple failure
+      format.json { render json: false }
+    end
+  end
+  
   def create
     auth = request.env["omniauth.auth"]
     user = User.find_by_provider_and_uid(auth["provider"], auth["uid"]) || User.create_with_omniauth(auth)

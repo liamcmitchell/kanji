@@ -292,7 +292,7 @@ body { background:$grey image-url("bg.png"); }
   margin:0 auto;
   width:360px;
 }
-
+span.error {color:$red;padding:0 10px;}
 /* =============================================================================
    Non-semantic helper classes
    Please define your styles before this section.

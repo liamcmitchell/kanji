@@ -38,7 +38,7 @@ var App = function() {
     // cache dom
     $canvas = $('#canvas');
     $signin = $('#signin').detach().submit(function(){ signInSubmit($(this)); return false; });
-    $register = $('#register').detach().submit(function(){ registerSubmit(this); return false; });;
+    $register = $('#register').detach().submit(function(){ /*registerSubmit(this); return false;*/ });;
     
     // set up keyboard listeners
     $(document).bind('keydown.1', function(){ select(1); });
@@ -63,10 +63,10 @@ var App = function() {
   function initUser(userObject) {
     user = userObject;
     if (user.uid) {
-      $('#user').html('<a href="#">' + user.name + '</a>').click(function(){ settingsDialogue(); });
+      $('#user').html('<a href="#">' + user.name + '</a>').click(function(){ return settingsDialogue(); return false; });
     }
     else {
-      $('#user').html('<a href="#">Sign in or create account</a>').click(function(){ signInDialogue(); });
+      $('#user').html('<a href="#">Sign in or create account</a>').click(function(){ signInDialogue(); return false; });
     }
   }
   
@@ -80,7 +80,6 @@ var App = function() {
     d.append(themeBox('Sign out', ['button']).click(function(){ signOut(); }));
     d.append(themeBox('Back to learning!', ['button']).click(function(){ start(); }));
     canvasShow(d);
-    return false;
   }
   
   // sign out
@@ -117,29 +116,37 @@ var App = function() {
     d.append(themeBox($register));
     d.append(themeBox('Actually, no thanks...', ['button']).click(function(){ start(); }));
     canvasShow(d);
-    return false;
   };
   
   // sign in submit handler
   function signInSubmit($form) {
+    // remove errors from previous attempts
+    $('.error', $form).remove();
+    // submit form via ajax
     $.ajax({
       url: $form.attr('action'),
       type: $form.attr('method'),
       data: $form.serialize() + '&format=json', // .json path doesn't work with oath identity
-      success: function(data) {
-        log(data);
+      success: function(data, textStatus) {
         // if signed in
         if (data.uid) {
           initUser(data);
           start();
         }
-        // if error
-        else {
-          
+        // if sign in error
+        else if (data === false) {
+          $('#password', $form).val('');
+          $('.actions', $form).append('<span class="error">Sign in failed</span>');
+          $('input', $form).removeAttr('disabled');
         }
-        if (typeof(callback) === "function") callback();
-      }
+        else {
+          log(arguments);
+        }
+      },
+      error: log
     });
+    // disable so it can't be submitted twice
+    $('input', $form).attr('disabled', 'disabled');
   };
   
   // start
@@ -408,7 +415,9 @@ var App = function() {
   // debugging function
   function log(data) {
     if (debug) {
-      console.log(data);
+      $.each(arguments, function(k, v){
+        console.log(v);
+      });
     }
   }
   
