@@ -157,47 +157,42 @@ var App = function() {
       canvasShow(buildTest(currentTest));
     }
     // start if enough info is available
-    else if (jlptLevels()) {
-      load(function(){ next(); });
+    else if (jlptLevel()) {
+      updateCards(function(){ next(); });
     }
     // otherwise get info needed to start
     else {
       d = $('<div class="dialogue" />');
       d.append(themeTitle('Select a JLPT level to start with or sign in'));
-      d.append(themeBox('Level 1 (hardest)', ['button']).click(function(){ jlptLevels(1); start(); }));
-      d.append(themeBox('Level 2', ['button']).click(function(){ jlptLevels(2); start(); }));
-      d.append(themeBox('Level 3', ['button']).click(function(){ jlptLevels(3); start(); }));
-      d.append(themeBox('Level 4 (easiest)', ['button']).click(function(){ jlptLevels(4); start(); }));
+      d.append(themeBox('Level 1 (hardest)', ['button']).click(function(){ jlptLevel(1); start(); }));
+      d.append(themeBox('Level 2', ['button']).click(function(){ jlptLevel(2); start(); }));
+      d.append(themeBox('Level 3', ['button']).click(function(){ jlptLevel(3); start(); }));
+      d.append(themeBox('Level 4 (easiest)', ['button']).click(function(){ jlptLevel(4); start(); }));
       canvasShow(d);
     }
   }
   
   // fill up testingCards
-  function load(callback) {
+  function updateCards(callback) {
+    revised = cardsToUpdate();
     $.ajax({
-      url: '/kanjis.json',
-      type: 'GET',
+      url: '/cards/update',
+      type: 'POST',
       data: {
+        revised: revised,
         jlpt: user.settings.jlpt,
-        not_in: literals(testingCards).join('') + literals(learntCards).join(''),
         limit: testingCardsSize - testingCards.length,
-        sort: 'random',
-        },
-      success: function(data) {
-        testingCards = testingCards.concat(storeCards(data));
-        if (typeof(callback) === "function") callback();
+        card_not_in: cardIds(testingCards),
+        kanji_not_in: kanjiIds([].concat(testingCards, learntCards))
       }
+    }).done(function(data) {
+      testingCards = testingCards.concat(data);
+      cardsUpdated(revised);
+      if (typeof(callback) === "function") callback();
+    }).fail(function(){
+      cardsNotUpdated(revised);
+      log(arguments);
     });
-  };
-  
-  // return references to master list (is this needed?)
-  function storeCards(array) {
-    out = [];
-    for (i=0; i<array.length; i++) {
-      cards[array[i]['literal']] = array[i];
-      out.push(cards[array[i]['literal']]);
-    }
-    return out;
   };
   
   // next test
@@ -274,12 +269,63 @@ var App = function() {
   };
   
   // return array of literals from given cards
-  function literals(set) {
+  function kanjiLiterals(array) {
     out = [];
-    $.each(set, function(index, value){
-      if (value && value.literal) out.push(value.literal);
+    $.each(array, function(index, value){
+      if (value && value.kanji) out.push(value.kanji.literal);
     });
     return out;
+  }
+  
+  // return array of ids
+  function kanjiIds(array) {
+    out = [];
+    $.each(array, function(index, card){
+      if (card && card.kanji) out.push(card.kanji.id);
+    });
+    return out;
+  }
+  
+  // return array of ids
+  function cardIds(array) {
+    out = [];
+    $.each(array, function(index, card){
+      if (card && card.id) out.push(card.id);
+    });
+    return out;
+  }
+  
+  // find cards that need updating
+  function cardsToUpdate() {
+    out = [];
+    // only update cards if user is signed in
+    if (user.id) {
+      $.each(learntCards, function(index, card){
+        if (card && !card.update) {
+          card.update = 'updating';
+          out.push(card.id);
+        }
+      });
+    }
+    return out;
+  }
+  
+  // mark cards as updated
+  function cardsUpdated(array) {
+    $.each(array, function(index, card){
+      if (card) {
+        card.update = 'updated';
+      }
+    });
+  }
+  
+  // unmark cards
+  function cardsNotUpdated(array) {
+    $.each(array, function(index, card){
+      if (card) {
+        card.update = '';
+      }
+    });
   }
   
   // handler for answer selection
@@ -319,7 +365,7 @@ var App = function() {
           // show user kanji that has been learnt
           $('#learnt').append(t.card.literal).show();
           // get new cards
-          load();
+          updateCards();
         }
       }
       
@@ -359,16 +405,16 @@ var App = function() {
   // theme a card
   function themeCard(card, qa, type) {
     // make verb stem bold
-    kunyomi = card.kunyomi.split(', ');
+    kunyomi = card.kanji.kunyomi.split(', ');
     for (var i = 0; i < kunyomi.length; i++) {
       if (kunyomi[i].search(/\./) > 0) {
         pieces = kunyomi[i].split('.');
         kunyomi[i] =  pieces[0] + '<span class="not-reading">' + pieces[1] + '</span>';
       }
     }
-    html = '<div class="literal">' + card.literal + '</div>'
-      + '<div class="meaning">' + card.meaning + '</div>'
-      + '<div class="onyomi">' + card.onyomi + '</div>'
+    html = '<div class="literal">' + card.kanji.literal + '</div>'
+      + '<div class="meaning">' + card.kanji.meaning + '</div>'
+      + '<div class="onyomi">' + card.kanji.onyomi + '</div>'
       + '<div class="kunyomi">' + (kunyomi.join(', ') || '') + '</div>';
     return themeBox(html, [qa, type[qa]]).data('card', card);
   };
@@ -396,20 +442,15 @@ var App = function() {
   };
   
   // return array of levels or nil if none, set levels if argument provided
-  function jlptLevels(levels) {
+  function jlptLevel(level) {
     if (!user.settings) user.settings = {};
-    if (!user.settings.jlpt) user.settings.jlpt = [];
+    if (!user.settings.jlpt) user.settings.jlpt = null;
     
-    if (typeof(levels) === 'number') {
-      user.settings.jlpt.push(levels);
+    if (level) {
+      user.settings.jlpt = level;
     }
-    else if (typeof(levels) === 'array') {
-      user.settings.jlpt = levels;
-    }
-    if (user.settings.jlpt.length) {
-      return user.settings.jlpt;
-    }
-    else return null;
+    
+    return user.settings.jlpt;
   }
   
   // debugging function
@@ -422,6 +463,7 @@ var App = function() {
   }
   
   init();
+  
   
   // return object
   return this;
