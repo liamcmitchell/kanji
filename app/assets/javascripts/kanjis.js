@@ -28,8 +28,9 @@ var App = function() {
     {id: 3, question: 'literal', answer: 'reading'}, 
     {id: 4, question: 'reading', answer: 'literal'}
   ];
-  var user = {};
-  
+  // User set elsewhere
+  //var currentUser = new User(USER);
+
   // init
   function init() {
     // don't start tester if not on home page
@@ -46,24 +47,16 @@ var App = function() {
     $(document).bind('keydown.3', function(){ select(3); });
     $(document).bind('keydown.4', function(){ select(4); });
     
-    // load user data if included on page
-    if ($('#user-json').length) {
-      initUser(jQuery.parseJSON($('#user-json').html()));
-      $('#user-json').remove();
-    }
-    else {
-      initUser({});
-    }
+    initUser();
     
     start();
 
   };
   
   // save given user object and update related objects
-  function initUser(userObject) {
-    user = userObject;
-    if (user.uid) {
-      $('#user').html('<a href="#">' + user.name + '</a>').click(function(){ return settingsDialogue(); return false; });
+  function initUser() {
+    if (currentUser.isSignedIn()) {
+      $('#user').html('<a href="#">' + currentUser.get('name') + '</a>').click(function(){ return settingsDialogue(); return false; });
     }
     else {
       $('#user').html('<a href="#">Sign in or create account</a>').click(function(){ signInDialogue(); return false; });
@@ -77,7 +70,7 @@ var App = function() {
     d = $('<div class="dialogue" />');
     d.append(themeTitle('Settings'));
     d.append(themeBox('Multiple settings available here'));
-    d.append(themeBox('Sign out', ['button']).click(function(){ signOut(); }));
+    d.append(themeBox('Sign out', ['button']).click(function(){ currentUser.signOut(); }));
     d.append(themeBox('Back to learning!', ['button']).click(function(){ start(); }));
     canvasShow(d);
   }
@@ -105,10 +98,31 @@ var App = function() {
     });
   }
   
+  // sign-out trigger
+  currentUser.on('signed-out', function(data) {
+    // clear all saved data
+    cards = {};
+    testingCards = [];
+    learntCards = [];
+    currentTest = null;
+    previousTests = [];
+    // reset user elements
+    initUser();
+    // back to start
+    start();
+  });
+  
   // sign in/create account form
   function signInDialogue() {
     if (state == 'signin') return false;
     state = 'signin';
+    
+    // make sure forms are reset
+    $('input', $signin).removeAttr('disabled')
+    $('[type=text], [type=password]', $signin).val('');
+    $('input', $register).removeAttr('disabled')
+    $('[type=text], [type=password]', $register).val('');
+    
     d = $('<div class="dialogue" />');
     d.append(themeTitle('Sign in'));
     d.append(themeBox($signin));
@@ -123,18 +137,20 @@ var App = function() {
     // remove errors from previous attempts
     $('.error', $form).remove();
     // submit form via ajax
-    $.ajax({
-      url: $form.attr('action'),
-      type: $form.attr('method'),
-      data: $form.serialize() + '&format=json', // .json path doesn't work with oath identity
-      success: function(data, textStatus) {
+    currentUser.signIn(
+      $form.find('input[name=auth_key]').val(),
+      $form.find('input[name=password]').val(),
+      log,
+      function(data, textStatus) {
         // if signed in
         if (data.uid) {
-          initUser(data);
+          currentUser.set(data);
+          initUser();
           start();
         }
         // if sign in error
         else if (data === false) {
+          log(arguments);
           $('#password', $form).val('');
           $('.actions', $form).append('<span class="error">Sign in failed</span>');
           $('input', $form).removeAttr('disabled');
@@ -142,9 +158,8 @@ var App = function() {
         else {
           log(arguments);
         }
-      },
-      error: log
-    });
+      }
+    );
     // disable so it can't be submitted twice
     $('input', $form).attr('disabled', 'disabled');
   };
@@ -180,7 +195,7 @@ var App = function() {
       type: 'POST',
       data: {
         revised: revised,
-        jlpt: user.settings.jlpt,
+        jlpt: jlptLevel(),
         limit: testingCardsSize - testingCards.length,
         card_not_in: cardIds(testingCards),
         kanji_not_in: kanjiIds([].concat(testingCards, learntCards))
@@ -299,7 +314,7 @@ var App = function() {
   function cardsToUpdate() {
     out = [];
     // only update cards if user is signed in
-    if (user.id) {
+    if (currentUser.isSignedIn()) {
       $.each(learntCards, function(index, card){
         if (card && !card.update) {
           card.update = 'updating';
@@ -443,14 +458,17 @@ var App = function() {
   
   // return array of levels or nil if none, set levels if argument provided
   function jlptLevel(level) {
-    if (!user.settings) user.settings = {};
-    if (!user.settings.jlpt) user.settings.jlpt = null;
+    settings = currentUser.get('settings');
+    
+    if (!settings) settings = {};
+    if (!settings.jlpt) settings.jlpt = null;
     
     if (level) {
-      user.settings.jlpt = level;
+      settings.jlpt = level;
+      currentUser.set('settings', settings);
     }
     
-    return user.settings.jlpt;
+    return settings.jlpt;
   }
   
   // debugging function

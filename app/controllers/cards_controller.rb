@@ -31,7 +31,6 @@ class CardsController < ApplicationController
     revised = params[:revised]
     # jlpt level
     jlpt = (1..4) === params[:jlpt].to_i ? params[:jlpt].to_i : 4
-    debugger
     # max cards to return (20)
     limit = [params[:limit].to_i, 20].min
     # filter out cards - used to stop results that are currently being tested

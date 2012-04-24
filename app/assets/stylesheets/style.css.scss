@@ -222,7 +222,7 @@ body, button, input, select, textarea { font-family: sans-serif; color: $grey-da
 a {font-weight:bold;color:$grey-darkest;text-decoration:none;}
 a:hover {text-decoration:underline;}
 body { background:$grey image-url("bg.png"); }
-#page {position:relative;margin:10px;}
+#app {position:relative;margin:10px;}
 #control {}
 #title {font-weight:bold;float:left;}
 #user {float:right;}
