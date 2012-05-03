@@ -9,7 +9,7 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 	<meta name="viewport" content="width=device-width,initial-scale=1">
-  
+
   <%= javascript_tag do %>
     <% if current_user %>
       var USER = <%=raw current_user.as_json(root: false).to_json %>;
@@ -23,7 +23,11 @@
 </head>
 <body>
 <div id="app">
-  <div id="control" class="clearfix"><div id="title">Kanji Practice</div><div id="user"></div><div id="learnt"></div></div>
+  <div id="control" class="clearfix">
+    <div id="title">Kanji Practice</div>
+    <div id="user"><a id="user-name" href="#"></a></div>
+    <div id="learnt"></div>
+  </div>
   <%= flash[:notice] %>
   <%= yield %>
 </div>
