@@ -1,5 +1,5 @@
 // Card model
-var Card = Backbone.Model.extend({
+App.Card = Backbone.Model.extend({
 
   defaults: function() {
     return {
@@ -9,49 +9,59 @@ var Card = Backbone.Model.extend({
 
   initialize: function() {
     this.kanji = this.get('kanji');
+    this.resetTests();
   },
 
-  // chooses test type from available types
-  chooseTest: function(testTypes) {
-    this.results = this.results || {};
-    var results = this.results;
-    var choices = [];
-    _.each(testTypes, function(value){
-      if (!results.hasOwnProperty(value.id)) results[value.id] = 0;
-      // TODO check that each test can actually be tested
-      if (results[value.id] < value.times) choices.push(value);
-    });
-    return _.first(_.shuffle(choices));
-  },
+  correct: function(test) {
+    this.tests[test.id] += 1;
 
-  correctTest: function(testType) {
-    this.results[testType.id] += 1;
-  },
-
-  failTest: function(testType) {
-    this.results = {};
-  },
-
-  completedTests: function(testTypes) {
-    var results = this.results;
-    var completed = true;
-    _.each(testTypes, function(value){
-      if (results.hasOwnProperty(value.id) && results[value.id] < value.times) completed = false;
-    });
-    if (completed) {
+    // if card has been correctly tested enough
+    if (this.remainingTests().length == 0) {
       // increment revisions by one
       this.set('revisions', this.get('revisions') + 1);
-      this.results = {};
-      return true;
+      this.resetTests();
+
+      App.testingCardSet.remove(this);
+      App.learntCardSet.add(this);
+
     }
+  },
+
+  resetTests: function() {
+    this.tests = {};
+    var tests = this.tests;
+    _.each(App.testTypes, function(value){
+      tests[value.id] = 0;
+    });
+  },
+
+  // return array of tests not yet completed
+  remainingTests: function() {
+    var card = this;
+    return _.filter(App.testTypes, function(value){
+      return (card.canTest(value) && card.tests[value.id] < value.times);
+    });
+  },
+
+  // checks if test can be applied to card
+  canTest: function(test) {
+    return (this.kanji[test.question] && this.kanji[test.answer]);
   }
 
 });
 
-var CardSet = Backbone.Collection.extend({
-  model: Card,
+App.CardSet = Backbone.Collection.extend({
+  model: App.Card,
+  initialize: function(){
+    c = this;
+    App.currentUser.on('signed-out', function(){
+      c.reset();
+    });
+  },
+
+  // return random set of specified length
   random: function(num) {
-    result = new CardSet;
+    result = new App.CardSet;
 
     if (this.length == 0) return result;
 
@@ -67,5 +77,75 @@ var CardSet = Backbone.Collection.extend({
       }
     }
     return result;
+  },
+
+  // update card set from server (only intended for App.testingCardSet)
+  update: function(callback) {
+    if (this.length >= App.options.testingCardSetSize) return false;
+    var cardSet = this;
+    $.ajax({
+      url: '/cards/update',
+      type: 'POST',
+      data: {
+        jlpt: App.currentUser.jlpt(),
+        limit: App.options.testingCardSetSize - cardSet.length,
+        card_not_in: cardSet.pluck('id'),
+        kanji_not_in: 1 // TODO
+      }
+    }).done(function(data) {
+      cardSet.add(data);
+      // TODO alert user if they are running out of cards?
+      if (typeof(callback) == 'function') callback();
+    });
+  }
+});
+
+App.CardView = Backbone.View.extend({
+  className: 'card box',
+  initialize: function(){
+    this.render();
+  },
+  render: function(){
+    // prepare variables
+    var kanji = this.model.kanji;
+    var kunyomi = kanji.kunyomi.split(', ');
+    for (var i = 0; i < kunyomi.length; i++) {
+      if (kunyomi[i].search(/\./) > 0) {
+        var pieces = kunyomi[i].split('.');
+        kunyomi[i] =  pieces[0] + '<span class="not-reading">' + pieces[1] + '</span>';
+      }
+    }
+
+    var variables = {
+      literal: kanji.literal,
+      meaning: kanji.meaning,
+      onyomi: kanji.onyomi,
+      kunyomi: kunyomi
+    };
+
+    var template = _.template( $("#card-template").html(), variables );
+
+    this.$el.html( template );
+  },
+  events: {
+    'click': 'click'
+  },
+  click: function(e) {
+    // if it's part of a test, check result
+    if (this.options.test) {
+      if (this.options.test.correct(this)) {
+        this.$el.addClass('correct');
+      }
+      else {
+        this.$el.addClass('incorrect');
+        this.show(this.options.test.model.type.question);
+      }
+    }
+  },
+  show: function(c) {
+    var all = 'literal meaning onyomi kunyomi';
+    if (c == 'all') c = all;
+    this.$el.removeClass(all).addClass(c);
+    return this; // for chaining
   }
 });

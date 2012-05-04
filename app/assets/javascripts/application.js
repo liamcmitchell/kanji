@@ -14,4 +14,15 @@
 //= require jquery_ujs
 //= require underscore-min
 //= require backbone-min
+//= require app
 //= require_tree .
+
+$(function(){
+
+  // Initialize the Backbone router.
+  if (window.location.pathname == '/') {
+    App.init();
+    Backbone.history.start();
+  }
+
+});

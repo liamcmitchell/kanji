@@ -1,5 +1,11 @@
 // User model
-var User = Backbone.Model.extend({
+App.User = Backbone.Model.extend({
+  defaults: function(){
+    return {
+      settings: {}
+    };
+  },
+
   isSignedIn : function() {
     return !this.isNew();
   },
@@ -22,9 +28,22 @@ var User = Backbone.Model.extend({
       url       : '/signout.json',
       type    : 'GET'
     }).done(function() {
-      console.log(this);
       u.clear();
       u.trigger('signed-out');
     });
+  },
+
+  // return level or set if provided
+  jlpt: function(level) {
+    settings = this.get('settings');
+
+    if (!settings.jlpt) settings.jlpt = null;
+
+    if (level) {
+      settings.jlpt = level;
+      this.set('settings', settings);
+    }
+
+    return settings.jlpt;
   }
 });
