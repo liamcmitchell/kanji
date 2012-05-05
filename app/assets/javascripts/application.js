@@ -22,7 +22,6 @@ $(function(){
   // Initialize the Backbone router.
   if (window.location.pathname == '/') {
     App.init();
-    Backbone.history.start();
   }
 
 });

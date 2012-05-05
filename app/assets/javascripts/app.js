@@ -2,12 +2,13 @@
 window.App = {};
 
 App.options = {
-  debug: true,                  // for development
   speed: 150,                   // base unit for animation and pause speed
   testingCardSetSize: 7         // number of cards that will be tested at the same time
 };
 
 App.init = function() {
+
+  console.log('App', App);
 
   // Set ajax defaults
   $.ajaxSetup({
@@ -19,7 +20,7 @@ App.init = function() {
 
   // log all ajax errors
   $(document).ajaxError(function(event, request, settings){
-    App.log(event, request, settings);
+    console.log('AJAX failed', event, request, settings);
   });
 
   // use alternate template settings so it will play nice in erb
@@ -28,17 +29,15 @@ App.init = function() {
     evaluate: /\<\@(.+?)\@\>/gim
   };
 
+  App.lock            = false;
+  App.$canvas         = $('#canvas');
   App.currentUser     = new App.User(USER);
   App.router          = new App.Router;
-  App.wait            = false;                    // lock
-  App.$canvas         = $('#canvas');             // container for app
-  App.$register       = $('#register').detach();  // register form
-  App.$signIn         = $('#signin').detach();    // sign in form
-  App.$userName       = $('#user-name');          // link with users name
-  App.cards           = new App.CardSet;          // holder for all cards used
-  App.testingCardSet  = new App.CardSet;          // cards currently being tested
-  App.learntCardSet   = new App.CardSet;          // cards tested and learnt
+  App.cards           = new App.CardSet;
+  App.testingCardSet  = new App.CardSet;
+  App.learntCardSet   = new App.CardSet;
   App.previousTests   = new App.Tests;
+
   App.testTypes = [
     {id: 1, question: 'literal', answer: 'meaning', times: 1},
     {id: 2, question: 'meaning', answer: 'literal', times: 1},
@@ -46,43 +45,31 @@ App.init = function() {
     {id: 4, question: 'reading', answer: 'literal', times: 1}
   ];
 
-  // submit handlers
-  App.$signIn.submit(function(){ signInSubmit($(this)); return false; });
-  App.$register.submit(function(){ /*registerSubmit(this); return false;*/ });
-
   // set up keyboard listeners
   $(document).bind('keydown.1', function(){ App.$canvas.find('.options > div:eq(0)').trigger('click'); });
   $(document).bind('keydown.2', function(){ App.$canvas.find('.options > div:eq(1)').trigger('click'); });
   $(document).bind('keydown.3', function(){ App.$canvas.find('.options > div:eq(2)').trigger('click'); });
   $(document).bind('keydown.4', function(){ App.$canvas.find('.options > div:eq(3)').trigger('click'); });
 
-  // on user change
-  App.currentUser.on('change', function(){
-    // render user name TODO change to view
-    if (App.currentUser.isSignedIn()) {
-      App.$userName.html(App.currentUser.get('name'));
-    }
-    else {
-      App.$userName.html('Sign in or create account');
-    }
-  });
-  App.currentUser.trigger('change');
+  // set user
+  $('#user').html(new App.UserView({model: App.currentUser}).$el);
 
-  // click handler
-  App.$userName.click(function(){ return settingsDialogue(); return false; });
+  Backbone.history.start();
 
 }
 
+// logging helper needed?
 App.log = function() {
   if (App.options.debug) {
-    _.each(arguments, function(v){
-      console.log(v);
-    });
+    console.log(arguments);
   }
 };
 
 // app router
 App.Router = Backbone.Router.extend({
+  initialize: function() {
+    this.on('all', function(event){ console.log(event); });
+  },
   routes: {
     "": "test",
     "settings": "settings",
@@ -96,7 +83,7 @@ App.Router = Backbone.Router.extend({
     App.settings();
   },
   signIn: function() {
-    App.signIn();
+    App.canvasShow(new App.UserSignInView());
   },
   defaultRoute: function(splat){
     // redirect to root
@@ -124,7 +111,7 @@ App.test = function() {
       }
       else {
         // prompt for level and try again
-        App.canvasShow(new App.JlptDialogueView());
+        App.canvasShow(new App.UserJlptView({callback: App.test}));
       }
     }
   }
@@ -133,26 +120,42 @@ App.test = function() {
 
 // settings state
 App.settings = function() {
-  if (App.currentUser.isSignedIn()) {
-    App.router.navigate("sign-in", true);
-    return false;
-  }
-  alert('TODO');
-}
+  App.canvasShow(new App.UserSettingsView());
+};
 
-// prompts for jlpt level
-App.JlptDialogueView = Backbone.View.extend({
-  className: 'dialogue',
-  initialize: function(){
-    this.render();
-  },
-  render: function(){
-    this.$el.html( _.template( $('#jlpt-dialogue-template').html() ) );
-  },
-  events: {
-    "click .button:eq(0)": function(){ App.currentUser.jlpt(1); App.test(); },
-    "click .button:eq(1)": function(){ App.currentUser.jlpt(2); App.test(); },
-    "click .button:eq(2)": function(){ App.currentUser.jlpt(3); App.test(); },
-    "click .button:eq(3)": function(){ App.currentUser.jlpt(4); App.test(); }
-  }
-});
+// show new view on canvas
+App.canvasShow = function(view) {
+  App.lock = true;
+  App.hide(App.$canvas, function(){
+    App.$canvas.empty().html(view.$el);
+    setTimeout(function(){
+      App.lock = false;
+      App.show(App.$canvas);
+    }, App.options.speed);
+  });
+};
+
+// hide animation
+App.hide = function(object, callback) {
+  object.css({position: 'relative'}).animate({opacity:0, left: '-100px'}, App.options.speed, 'swing', callback);
+};
+
+// show animation
+App.show = function(object, callback) {
+  object.css({position: 'relative', left: '100px'}).animate({opacity: 1, left: '0'}, App.options.speed, 'swing', callback);
+};
+
+// form helpers
+App.disableForm = function(form) {
+  form.find('input').attr('disabled', 'disabled');
+};
+
+App.resetForm = function(form) {
+  form.find('input:disabled').removeAttr('disabled');
+  form.removeClass('error');
+  form.find('.error').remove();
+};
+
+
+
+

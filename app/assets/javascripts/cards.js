@@ -94,6 +94,7 @@ App.CardSet = Backbone.Collection.extend({
       }
     }).done(function(data) {
       cardSet.add(data);
+      console.log('Fetched ' + data.length + ' card(s)');
       // TODO alert user if they are running out of cards?
       if (typeof(callback) == 'function') callback();
     });
