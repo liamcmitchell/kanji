@@ -296,6 +296,39 @@ body { background:$grey image-url("bg.png"); }
   width:360px;
 }
 span.error {color:$red;padding:0 10px;}
+
+form.error {
+  input[type=text],
+  input[type=password] {
+    border:1px solid $red;
+  }
+}
+
+#messages {
+  width:400px;
+  position:absolute;
+  top:20px;
+  z-index:100;
+}
+
+.message {
+  @include rounded;
+  background:$grey-light none;
+  margin:20px 0;
+  padding:10px;
+  &.error {
+    @include shadow($red);
+  }
+  &.info {
+    @include shadow($yellow);
+  }
+  .hide {
+    float:right;
+    font-weight:bold;
+    cursor:pointer;
+  }
+}
+
 /* =============================================================================
    Non-semantic helper classes
    Please define your styles before this section.

@@ -37,6 +37,7 @@ App.init = function() {
   App.testingCardSet  = new App.CardSet;
   App.learntCardSet   = new App.CardSet;
   App.previousTests   = new App.Tests;
+  App.messages        = new App.Messages;
 
   App.testTypes = [
     {id: 1, question: 'literal', answer: 'meaning', times: 1},

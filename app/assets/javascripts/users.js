@@ -123,7 +123,7 @@ App.UserSignInView = Backbone.View.extend({
         // display error to the user
         App.resetForm(form);
         form.addClass('error');
-        App.message('error', 'Sign in failed');
+        App.message('Sign in failed', 'error');
       },
       function(){
         // redirect to start
