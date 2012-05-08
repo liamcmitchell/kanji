@@ -273,8 +273,7 @@ body { background:$grey image-url("bg.png"); }
 .question .card, .options .card {
   &.literal .literal,
   &.meaning .meaning,
-  &.reading .onyomi,
-  &.reading .kunyomi {
+  &.reading .reading {
     display:block;
   }
 }

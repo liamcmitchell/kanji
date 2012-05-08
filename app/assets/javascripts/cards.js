@@ -45,7 +45,16 @@ App.Card = Backbone.Model.extend({
 
   // checks if test can be applied to card
   canTest: function(test) {
-    return (this.kanji[test.question] && this.kanji[test.answer]);
+    console.log(test);
+    return (this.hasAttr(test.question) && this.hasAttr(test.answer));
+  },
+  
+  // checks if kanji has property
+  hasAttr: function(attr) {
+    if (attr == 'reading') {
+      return (this.hasAttr('onyomi') || this.hasAttr('kunyomi'));
+    }
+    return (this.kanji.hasOwnProperty(attr) && this.kanji[attr]);
   }
 
 });
@@ -144,7 +153,7 @@ App.CardView = Backbone.View.extend({
     }
   },
   show: function(c) {
-    var all = 'literal meaning onyomi kunyomi';
+    var all = 'literal meaning reading';
     if (c == 'all') c = all;
     this.$el.removeClass(all).addClass(c);
     return this; // for chaining
