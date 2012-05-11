@@ -45,7 +45,6 @@ App.Card = Backbone.Model.extend({
 
   // checks if test can be applied to card
   canTest: function(test) {
-    console.log(test);
     return (this.hasAttr(test.question) && this.hasAttr(test.answer));
   },
   
@@ -61,12 +60,6 @@ App.Card = Backbone.Model.extend({
 
 App.CardSet = Backbone.Collection.extend({
   model: App.Card,
-  initialize: function(){
-    c = this;
-    App.currentUser.on('signed-out', function(){
-      c.reset();
-    });
-  },
 
   // return random set of specified length
   random: function(num) {

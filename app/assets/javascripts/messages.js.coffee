@@ -35,7 +35,7 @@ App.MessageView = Backbone.View.extend(
     App.show(this.$el)
     this.timer = setTimeout(
       => this.hide(),
-      App.options.speed * 10
+      App.options.speed * 20
     )
   hide: ->
     clearTimeout(this.timer)

@@ -41,13 +41,7 @@ App.Test = Backbone.Model.extend({
 });
 
 App.Tests = Backbone.Collection.extend({
-  model: App.Test,
-  initialize: function(){
-    c = this;
-    App.currentUser.on('signed-out', function(){
-      c.reset();
-    });
-  }
+  model: App.Test
 });
 
 App.TestView = Backbone.View.extend({

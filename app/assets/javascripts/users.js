@@ -9,6 +9,7 @@ App.User = Backbone.Model.extend({
       // don't save if the user is being changed (sign in/out)
       // the id attr shows when this happens
       if (this.isSignedIn() && !this.changedAttributes().hasOwnProperty('id')) {
+        console.log('Saving user');
         this.save();
       }
     });
@@ -29,9 +30,9 @@ App.User = Backbone.Model.extend({
       success   : function(data, textStatus, jqXHR){
         // server responds with json false if login failed
         if (data) {
+          App.reset();
           u.set(data);
           console.log('User ' + u.get('name') + ' loaded');
-          u.trigger('signed-in');
           onSucceed(data, textStatus, jqXHR);
         }
         else {
@@ -49,10 +50,8 @@ App.User = Backbone.Model.extend({
       url       : '/signout.json',
       type    : 'GET'
     }).done(function() {
-      u.clear();
       console.log('Signed out');
-      u.trigger('signed-out');
-      App.currentTest = null; // should go somewhere else
+      App.reset();
       App.router.navigate('', true);
     });
   },
@@ -61,7 +60,7 @@ App.User = Backbone.Model.extend({
   jlpt: function(level) {
     settings = this.get('settings');
 
-    if (settings == null) settings = {};
+    if (typeof(settings) != 'object') settings = {};
     if (!settings.jlpt) settings.jlpt = null;
 
     if (level) {

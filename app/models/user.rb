@@ -1,4 +1,5 @@
 class User < ActiveRecord::Base
+  serialize :settings, Hash
   has_many :cards
 
   def self.from_omniauth(auth)

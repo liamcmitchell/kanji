@@ -9,6 +9,7 @@ App::Application.routes.draw do
   match "/cards/update" => "cards#update_form", :via => :get
   match "/cards/update" => "cards#update", :via => :post
   
+  resources :users
   resources :kanjis
   resources :identities
 

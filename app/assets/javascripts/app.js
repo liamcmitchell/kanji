@@ -31,8 +31,8 @@ App.init = function() {
 
   App.lock            = false;
   App.$canvas         = $('#canvas');
-  App.currentUser     = new App.User(USER);
   App.router          = new App.Router;
+  App.currentUser     = new App.User(USER);
   App.cards           = new App.CardSet;
   App.testingCardSet  = new App.CardSet;
   App.learntCardSet   = new App.CardSet;
@@ -52,19 +52,24 @@ App.init = function() {
   $(document).bind('keydown.3', function(){ App.$canvas.find('.options > div:eq(2)').trigger('click'); });
   $(document).bind('keydown.4', function(){ App.$canvas.find('.options > div:eq(3)').trigger('click'); });
 
-  // set user
+  // set user interface
+  
   $('#user').html(new App.UserView({model: App.currentUser}).$el);
 
   Backbone.history.start();
 
 }
 
-// logging helper needed?
-App.log = function() {
-  if (App.options.debug) {
-    console.log(arguments);
-  }
-};
+// reset app (when user changes)
+App.reset = function() {
+  App.currentUser.clear();
+  App.currentTest = null;
+  App.cards.reset();
+  App.testingCardSet.reset();
+  App.learntCardSet.reset();
+  App.previousTests.reset();
+  App.messages.reset();
+}
 
 // app router
 App.Router = Backbone.Router.extend({
@@ -146,11 +151,12 @@ App.show = function(object, callback) {
   object.css({position: 'relative', left: '100px'}).animate({opacity: 1, left: '0'}, App.options.speed, 'swing', callback);
 };
 
-// form helpers
+// form helper
 App.disableForm = function(form) {
   form.find('input').attr('disabled', 'disabled');
 };
 
+// form helper
 App.resetForm = function(form) {
   form.find('input:disabled').removeAttr('disabled');
   form.removeClass('error');
