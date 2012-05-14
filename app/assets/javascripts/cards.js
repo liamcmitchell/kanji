@@ -1,6 +1,7 @@
 // Card model
 App.Card = Backbone.Model.extend({
-
+  urlRoot: '/cards',
+  
   defaults: function() {
     return {
       revisions: 0
@@ -10,6 +11,10 @@ App.Card = Backbone.Model.extend({
   initialize: function() {
     this.kanji = this.get('kanji');
     this.resetTests();
+    this.on('change', function(){
+      console.log('Updating card');
+      this.save();
+    });
   },
 
   correct: function(test) {
@@ -20,9 +25,11 @@ App.Card = Backbone.Model.extend({
       // increment revisions by one
       this.set('revisions', this.get('revisions') + 1);
       this.resetTests();
-
+      
+      // update card sets
       App.testingCardSet.remove(this);
       App.learntCardSet.add(this);
+      App.testingCardSet.update();
 
     }
   },
@@ -86,13 +93,13 @@ App.CardSet = Backbone.Collection.extend({
     if (this.length >= App.options.testingCardSetSize) return false;
     var cardSet = this;
     $.ajax({
-      url: '/cards/update',
+      url: '/cards/next',
       type: 'POST',
       data: {
         jlpt: App.currentUser.jlpt(),
         limit: App.options.testingCardSetSize - cardSet.length,
         card_not_in: cardSet.pluck('id'),
-        kanji_not_in: 1 // TODO
+        kanji_not_in: _.pluck(cardSet.pluck('kanji'), 'id')
       }
     }).done(function(data) {
       cardSet.add(data);

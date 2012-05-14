@@ -12,92 +12,54 @@ class CardsController < ApplicationController
     end
   end
 
-  # GET /cards/update
-  def update_form
+  # POST /cards/next
+  def next
 
-    respond_to do |format|
-      format.html { render :update }
-    end
-  end
-
-  # POST /cards/update
-  # POST /cards/update.json
-  def update
-
-    # return set of cards to revise
     @cards = []
 
-    # cards that have been revised
-    revised = params[:revised]
-    # jlpt level
-    jlpt = (1..4) === params[:jlpt].to_i ? params[:jlpt].to_i : 4
-    # max cards to return (20)
+    # no of cards to return (max 20)
     limit = [params[:limit].to_i, 20].min
-    # filter out cards - used to stop results that are currently being tested
-    card_not_in = params[:card_not_in].nil? || params[:card_not_in].empty? ? [0] : params[:card_not_in].split(/\+/)
-    # filter out kanji
-    kanji_not_in = params[:kanji_not_in].nil? || params[:kanji_not_in].empty? ? [0] : params[:kanji_not_in].split(/\+/)
+    # jlpt level must be 1-4
+    jlpt = (1..4) === params[:jlpt].to_i ? params[:jlpt].to_i : 4
+    # cards to filter out
+    card_not_in = params[:card_not_in].to_a.collect {|v| v.to_i }
+    # kanji to filter out
+    kanji_not_in = params[:kanji_not_in].to_a.collect {|v| v.to_i }
 
-    # update revised cards
-    # TODO: prevent double counting on async updates
-    if current_user && revised then
-      ActiveRecord::Base.transaction do
-        current_user.cards.find(revised).each do |card|
-          card.revisions += 1
-          card.save
-        end
-      end
-    end
-
-    # get all users cards
     if current_user then
-      current_user.cards.order("revisions").each do |card|
+      @cards = current_user.next_cards(limit, jlpt, card_not_in)
+    else
+      Kanji.order("RANDOM()")
+       .where(:jlpt => jlpt)
+       .where('id not in (?)', kanji_not_in)
+       .limit(limit - @cards.length)
+       .each { |kanji|
 
-        # build a list of cards to revise
-        if (card.revisions == 0 || card.revisions == 1 && card.updated_at < 12.hours.ago) then
-          @cards << card
-        end
-
-        # add kanji to list so we don't search for it later
-        kanji_not_in << card.kanji_id
-
-      end
+        # make dummy cards (without an id)
+        @cards << {:revisions => 0, :kanji => kanji}
+        
+      }
     end
-
-    # if there are not enough then generate new cards
-    if (@cards.length < limit) then
-
-      ActiveRecord::Base.transaction do
-        Kanji.order("RANDOM()")
-             .where(:jlpt => jlpt)
-             .where('id not in (?)', kanji_not_in)
-             .limit(limit - @cards.length)
-             .each do |kanji|
-
-          if current_user then
-            # save for user
-            @cards << current_user.cards.create(kanji_id: kanji.id, revisions: 0);
-          else
-            # give a dummy card (without an id)
-            @cards << {:revisions => 0, :kanji => kanji}
-          end
-
-        end
-      end
-
-    end
-
-    # if there still aren't enough cards then return info message
-    if (@cards.length < limit) then
-      # TODO: message to say change jlpt level or something
-    end
-
-    # make sure there are no more than required number of cards
-    @cards = @cards.slice(0, limit)
 
     respond_to do |format|
-      format.html { render :update }
+      format.html { render :index }
       format.json { render :json => @cards }
+    end
+  end
+  
+  # PUT /cards/1
+  # PUT /cards/1.json
+  def update
+    @card = Card.find(params[:id])
+
+    respond_to do |format|
+      if @card.update_attributes(:revisions => params[:revisions].to_i)
+        format.html { redirect_to @card, notice: 'Card was successfully updated.' }
+        format.json { head :no_content }
+      else
+        format.html { render action: "edit" }
+        format.json { render json: @card.errors, status: :unprocessable_entity }
+      end
     end
   end
 

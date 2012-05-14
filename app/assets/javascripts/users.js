@@ -9,7 +9,7 @@ App.User = Backbone.Model.extend({
       // don't save if the user is being changed (sign in/out)
       // the id attr shows when this happens
       if (this.isSignedIn() && !this.changedAttributes().hasOwnProperty('id')) {
-        console.log('Saving user');
+        console.log('Updating user');
         this.save();
       }
     });

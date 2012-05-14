@@ -33,7 +33,6 @@ App.init = function() {
   App.$canvas         = $('#canvas');
   App.router          = new App.Router;
   App.currentUser     = new App.User(USER);
-  App.cards           = new App.CardSet;
   App.testingCardSet  = new App.CardSet;
   App.learntCardSet   = new App.CardSet;
   App.previousTests   = new App.Tests;

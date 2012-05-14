@@ -5,12 +5,11 @@ App::Application.routes.draw do
   match "/signout" => "sessions#destroy", :as => :signout
   match "/auth/failure" => "sessions#new"
   
-  match "/cards" => "cards#index", :as => :cards
-  match "/cards/update" => "cards#update_form", :via => :get
-  match "/cards/update" => "cards#update", :via => :post
+  match "/cards/next" => "cards#next"
   
   resources :users
   resources :kanjis
+  resources :cards
   resources :identities
 
   get "home/index"
