@@ -61,9 +61,9 @@
 
 <script type="text/template" id="user-template"><%# </script> #%>
   <@ if (user.isSignedIn()) { @>
-    <a class="name" href="#/settings"><@= user.get('name') @></a>
+    <a class="name" href="#settings"><@= user.get('name') @></a>
   <@ } else { @>
-    <a class="sign-in" href="#/sign-in">Sign in or create account</a>
+    <a class="sign-in" href="#sign-in">Sign in or create account</a>
   <@ } @>
 </script>
 
@@ -105,8 +105,10 @@
 
 <script type="text/template" id="user-settings-template"><%# </script> #%>
   <@ if (App.currentUser.isSignedIn()) { @>
-    <p><a class="sign-out" href="/signout">Sign out</a></p>
+    <p><a href="#sign-out">Sign out</a></p>
   <@ } @>
+  <p><a href="#settings/level">Change level</a></p>
+  
 </script>
 
 </body>

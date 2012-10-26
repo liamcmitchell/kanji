@@ -12,8 +12,10 @@ App.Card = Backbone.Model.extend({
     this.kanji = this.get('kanji');
     this.resetTests();
     this.on('change', function(){
-      console.log('Updating card');
-      this.save();
+      if (App.currentUser.isSignedIn()) {
+        console.log('Updating card');
+        this.save();
+      }
     });
   },
 

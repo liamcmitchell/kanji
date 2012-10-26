@@ -24,10 +24,10 @@ class CardsController < ApplicationController
     # cards to filter out
     card_not_in = params[:card_not_in].to_a.collect {|v| v.to_i }
     # kanji to filter out
-    kanji_not_in = params[:kanji_not_in].to_a.collect {|v| v.to_i }
+    kanji_not_in = params[:kanji_not_in].to_a.push(0).collect {|v| v.to_i }
 
     if current_user then
-      @cards = current_user.next_cards(limit, jlpt, card_not_in)
+      @cards = current_user.cards_next(limit, jlpt, card_not_in)
     else
       Kanji.order("RANDOM()")
        .where(:jlpt => jlpt)

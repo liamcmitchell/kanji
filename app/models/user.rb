@@ -15,14 +15,15 @@ class User < ActiveRecord::Base
   end
   
     
-  def next_cards(limit, jlpt, card_not_in)
+  def cards_next(limit, jlpt, card_not_in)
     
     # ignore kanji when making new cards
     kanji_not_in = []
     
     list = cards.order("revisions")
-    debugger
-    kanji_in_cards = list.map { |card| card.kanji_id }
+    
+    # 0 is added in case there are no cards (NULL will cause SQL error)
+    kanji_in_cards = list.map { |card| card.kanji_id }.push(0)
     
     # select only those ready for revision and not excluded
     list = list.select { |card| card.revise? && !card_not_in.include?(card.id) }

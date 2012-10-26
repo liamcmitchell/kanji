@@ -141,6 +141,7 @@ App.UserSignInView = Backbone.View.extend({
 App.UserJlptView = Backbone.View.extend({
   className: 'dialogue',
   initialize: function(){
+    App.router.navigate('settings/level');
     this.render();
   },
   render: function(){
@@ -151,12 +152,16 @@ App.UserJlptView = Backbone.View.extend({
     this.$el.html( _.template( $('#jlpt-dialogue-template').html(), {title: title}) );
   },
   events: {
-    "click .button:eq(0)": function(){ App.currentUser.jlpt(1); this.callback(); },
-    "click .button:eq(1)": function(){ App.currentUser.jlpt(2); this.callback(); },
-    "click .button:eq(2)": function(){ App.currentUser.jlpt(3); this.callback(); },
-    "click .button:eq(3)": function(){ App.currentUser.jlpt(4); this.callback(); }
+    "click .button:eq(0)": function(){ App.currentUser.jlpt(1); this.close(); },
+    "click .button:eq(1)": function(){ App.currentUser.jlpt(2); this.close(); },
+    "click .button:eq(2)": function(){ App.currentUser.jlpt(3); this.close(); },
+    "click .button:eq(3)": function(){ App.currentUser.jlpt(4); this.close(); }
   },
-  callback: function() {
-    if (typeof(this.options.callback) == 'function') this.options.callback();
+  close: function() {
+    if (typeof App.destination == 'string') {
+      App.router.navigate(App.destination, true);
+      App.destination = null;
+    }
+    else App.router.navigate('settings', true);
   }
 });

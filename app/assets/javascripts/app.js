@@ -40,9 +40,9 @@ App.init = function() {
 
   App.testTypes = [
     {id: 1, question: 'literal', answer: 'meaning', times: 1},
-    {id: 2, question: 'meaning', answer: 'literal', times: 1},
-    {id: 3, question: 'literal', answer: 'reading', times: 1},
-    {id: 4, question: 'reading', answer: 'literal', times: 1}
+    {id: 2, question: 'meaning', answer: 'literal', times: 0},
+    {id: 3, question: 'literal', answer: 'reading', times: 0},
+    {id: 4, question: 'reading', answer: 'literal', times: 0}
   ];
 
   // set up keyboard listeners
@@ -60,10 +60,10 @@ App.init = function() {
 }
 
 // reset app (when user changes)
+// TODO move to event bindings?
 App.reset = function() {
   App.currentUser.clear();
   App.currentTest = null;
-  App.cards.reset();
   App.testingCardSet.reset();
   App.learntCardSet.reset();
   App.previousTests.reset();
@@ -76,28 +76,40 @@ App.Router = Backbone.Router.extend({
     this.on('all', function(event){ console.log(event); });
   },
   routes: {
-    "": "test",
-    "settings": "settings",
-    "sign-in": "signIn",
-    "*splat": "defaultRoute"
+    ""                : "test",
+    "settings"        : "settings",
+    "settings/level"  : "settings_level",
+    "sign-in"         : "signin",
+    "sign-out"        : "signout",
+    "*splat"          : "defaultRoute"
   },
   test: function() {
     App.test();
   },
   settings: function() {
-    App.settings();
+    App.canvasShow(new App.UserSettingsView());
   },
-  signIn: function() {
-    App.canvasShow(new App.UserSignInView());
+  settings_level: function() {
+    App.canvasShow(new App.UserJlptView());
+  },
+  signin: function() {
+    // redirect to root if user is already logged in
+    if (App.currentUser.isSignedIn()) this.navigate("", true);
+    // otherwise show signin page
+    else App.canvasShow(new App.UserSignInView());
+  },
+  signout: function() {
+    App.currentUser.signOut();
   },
   defaultRoute: function(splat){
-    // redirect to root
+    // redirect all other paths to root
     this.navigate("", true);
   }
 });
 
 // test state
 App.test = function() {
+  App.router.navigate('');
 
   // show current test
   if (App.currentTest) {
@@ -115,17 +127,13 @@ App.test = function() {
         App.testingCardSet.update(function(){ App.test(); });
       }
       else {
-        // prompt for level and try again
-        App.canvasShow(new App.UserJlptView({callback: App.test}));
+        // prompt for level
+        App.destination = ''; // root
+        App.router.navigate('settings/level', {trigger: true});
       }
     }
   }
 
-};
-
-// settings state
-App.settings = function() {
-  App.canvasShow(new App.UserSettingsView());
 };
 
 // show new view on canvas
