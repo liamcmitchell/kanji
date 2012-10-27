@@ -36,6 +36,21 @@ App.Test = Backbone.Model.extend({
       this.result = 'incorrect';
       this.card.resetTests();
     }
+  },
+  
+  check: function(card) {
+    var answer = (card == this.card);
+    
+    if (answer == true) {
+      this.trigger('completed correct');
+      if (!this.result) this.result = 'correct'
+    }
+    else {
+      this.trigger('incorrect');
+      if (!this.result) this.result = 'incorrect'
+    }
+    
+    return answer;    
   }
 
 });
@@ -44,43 +59,91 @@ App.Tests = Backbone.Collection.extend({
   model: App.Test
 });
 
+App.TesterView = Backbone.View.extend({
+  className: 'tester',
+  initialize: function(){
+    // If test already exists, go back to it
+    this.nextTest(App.currentTest);
+  },
+  render: function(){
+    
+  },
+  nextTest: function(test) {
+    var v = this;
+    
+    if (!test) {
+    
+      // Make new test if cards are available
+      if (App.testingCardSet.length) {
+        test = new App.Test;
+      }
+      else {        
+        // Update cards (async)
+        App.testingCardSet.update(function() {
+          v.nextTest();
+        });
+        // Show loading screen
+        v.$el.html( _.template( $('#test-loading').html() ) );
+        return;
+      }
+    }
+    
+    if (test) {
+      // Update currentTest
+      App.currentTest = test;
+      // Set callback to start next test once completed
+      test.on("completed", function(){
+        setTimeout(function(){ v.nextTest(); }, App.options.speed);
+      });
+      // Show test
+      App.a.slide(v.$el, new App.TestView({model: test}).$el);
+    }
+    else {
+      console.log('No test to display');
+    }
+  }
+});
+
 App.TestView = Backbone.View.extend({
   className: 'test',
   initialize: function(){
-    var v = this;
-    v.render();
-
-    // add question card
-    v.questionCard = new App.CardView({model: v.model.card}).show(v.model.type.question);
-    v.$el.find('.question').append( v.questionCard.$el );
-    // add option cards
-    v.optionCards = [];
-    v.model.cards.each(function(value){
-      var option = new App.CardView({model: value, test: v}).show(v.model.type.answer);
-      v.optionCards.push(option);
-      v.$el.find('.options').append( option.$el );
-    });
+    this.render();
   },
   render: function(){
-    this.$el.html( _.template( $('#test-template').html() ) );
-  },
-  events: {
+    var v = this;  // view
+    var t = this.model; // test
+    
+    // load template
+    v.$el.html( _.template( $('#test-template').html() ) );
+    
+    // add question card
+    questionCard = new App.CardView({model: t.card}).show(t.type.question);
+    v.$el.find('.question').append( questionCard.$el );
+    
+    // add option cards
+    t.cards.each(function(card){
+    
+      var option = new App.CardView({model: card});
+      
+      // Show answer part of card
+      option.show(t.type.answer);
+      
+      // Add listener for click
+      option.$el.on('click', function(){
+      
+        // Check result and mark accordingly
+        if (t.check(card) == true) {
+          option.$el.addClass('correct');
+        }
+        else {
+          option.$el.addClass('incorrect');
+          option.show(t.type.question);
+        }
+        
+      });
 
-  },
-  // check sent from option card
-  correct: function(cardView) {
-    if (cardView.model == this.model.card) {
-      this.model.correct();
-      // make a new test
-      App.previousTests.add(App.currentTest);
-      App.currentTest = new App.Test;
-      // continue to next test after delay
-      setTimeout(App.test, App.options.speed);
-      return true;
-    }
-    else {
-      this.model.fail();
-      return false;
-    }
+      // Add to dom
+      v.$el.find('.options').append( option.$el );
+    });
   }
 });

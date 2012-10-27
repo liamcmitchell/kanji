@@ -57,7 +57,7 @@ App.User = Backbone.Model.extend({
   },
 
   // return level or set if provided
-  jlpt: function(level) {
+  level: function(level) {
     settings = this.get('settings');
 
     if (typeof(settings) != 'object') settings = {};
@@ -94,9 +94,6 @@ App.UserSettingsView = Backbone.View.extend({
   },
   render: function(){
     this.$el.html( _.template( $('#user-settings-template').html() ) );
-  },
-  events: {
-    'click a.sign-out': function(){ App.currentUser.signOut(); return false; }
   }
 });
 
@@ -152,10 +149,10 @@ App.UserJlptView = Backbone.View.extend({
     this.$el.html( _.template( $('#jlpt-dialogue-template').html(), {title: title}) );
   },
   events: {
-    "click .button:eq(0)": function(){ App.currentUser.jlpt(1); this.close(); },
-    "click .button:eq(1)": function(){ App.currentUser.jlpt(2); this.close(); },
-    "click .button:eq(2)": function(){ App.currentUser.jlpt(3); this.close(); },
-    "click .button:eq(3)": function(){ App.currentUser.jlpt(4); this.close(); }
+    "click .button:eq(0)": function(){ App.currentUser.level(1); this.close(); },
+    "click .button:eq(1)": function(){ App.currentUser.level(2); this.close(); },
+    "click .button:eq(2)": function(){ App.currentUser.level(3); this.close(); },
+    "click .button:eq(3)": function(){ App.currentUser.level(4); this.close(); }
   },
   close: function() {
     if (typeof App.destination == 'string') {

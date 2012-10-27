@@ -84,7 +84,13 @@ App.Router = Backbone.Router.extend({
     "*splat"          : "defaultRoute"
   },
   test: function() {
-    App.test();
+    // Make sure we have level needed to test
+    if (!App.currentUser.level()) {
+      App.destination = ''; // come back after choosing level
+      App.router.navigate('settings/level', {trigger: true});
+      return;
+    }
+    App.canvasShow(new App.TesterView());
   },
   settings: function() {
     App.canvasShow(new App.UserSettingsView());
@@ -107,54 +113,38 @@ App.Router = Backbone.Router.extend({
   }
 });
 
-// test state
-App.test = function() {
-  App.router.navigate('');
+App.nextTest = function() {
+  
+  App.canvasShow(new App.TestView());
+}
 
-  // show current test
-  if (App.currentTest) {
-    App.canvasShow(new App.TestView({model: App.currentTest}));
-  }
-  else {
-    // if there are cards, make a new test and try again
-    if (App.testingCardSet.length) {
-      App.currentTest = new App.Test;
-      App.test();
-    }
-    else {
-      // if we have jlpt level, get new cards and try again
-      if (App.currentUser.jlpt()) {
-        App.testingCardSet.update(function(){ App.test(); });
-      }
-      else {
-        // prompt for level
-        App.destination = ''; // root
-        App.router.navigate('settings/level', {trigger: true});
-      }
-    }
-  }
-
+// Show new view on canvas
+App.canvasShow = function(view) {
+  App.$canvas.html(view.$el);
 };
 
-// show new view on canvas
-App.canvasShow = function(view) {
+// Animation functions
+App.a = {};
+
+// Slide out old content/slide in new content
+App.a.slide = function(container, content) {
   App.lock = true;
-  App.hide(App.$canvas, function(){
-    App.$canvas.empty().html(view.$el);
+  App.a.hide(container, function(){
+    container.html(content);
     setTimeout(function(){
       App.lock = false;
-      App.show(App.$canvas);
+      App.a.show(container);
     }, App.options.speed);
   });
-};
+}
 
 // hide animation
-App.hide = function(object, callback) {
+App.a.hide = function(object, callback) {
   object.css({position: 'relative'}).animate({opacity:0, left: '-100px'}, App.options.speed, 'swing', callback);
 };
 
 // show animation
-App.show = function(object, callback) {
+App.a.show = function(object, callback) {
   object.css({position: 'relative', left: '100px'}).animate({opacity: 1, left: '0'}, App.options.speed, 'swing', callback);
 };
 

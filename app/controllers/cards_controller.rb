@@ -20,7 +20,7 @@ class CardsController < ApplicationController
     # no of cards to return (max 20)
     limit = [params[:limit].to_i, 20].min
     # jlpt level must be 1-4
-    jlpt = (1..4) === params[:jlpt].to_i ? params[:jlpt].to_i : 4
+    jlpt = (1..4) === params[:level].to_i ? params[:level].to_i : 4
     # cards to filter out
     card_not_in = params[:card_not_in].to_a.collect {|v| v.to_i }
     # kanji to filter out

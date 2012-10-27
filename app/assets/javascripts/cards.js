@@ -92,13 +92,15 @@ App.CardSet = Backbone.Collection.extend({
 
   // update card set from server (only intended for App.testingCardSet)
   update: function(callback) {
-    if (this.length >= App.options.testingCardSetSize) return false;
+  
+    if (this.length >= App.options.testingCardSetSize) return true;
+    
     var cardSet = this;
     $.ajax({
       url: '/cards/next',
       type: 'POST',
       data: {
-        jlpt: App.currentUser.jlpt(),
+        level: App.currentUser.level(),
         limit: App.options.testingCardSetSize - cardSet.length,
         card_not_in: cardSet.pluck('id'),
         kanji_not_in: _.pluck(cardSet.pluck('kanji'), 'id')
@@ -138,21 +140,6 @@ App.CardView = Backbone.View.extend({
     var template = _.template( $("#card-template").html(), variables );
 
     this.$el.html( template );
-  },
-  events: {
-    'click': 'click'
-  },
-  click: function(e) {
-    // if it's part of a test, check result
-    if (this.options.test) {
-      if (this.options.test.correct(this)) {
-        this.$el.addClass('correct');
-      }
-      else {
-        this.$el.addClass('incorrect');
-        this.show(this.options.test.model.type.question);
-      }
-    }
   },
   show: function(c) {
     var all = 'literal meaning reading';
