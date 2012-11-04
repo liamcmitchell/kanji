@@ -12,7 +12,7 @@ App.User = Backbone.Model.extend({
         console.log('Updating user');
         this.save();
       }
-    });
+    }, this);
 
   },
 
@@ -48,7 +48,7 @@ App.User = Backbone.Model.extend({
     var u = this;
     $.ajax({
       url       : '/signout.json',
-      type    : 'GET'
+      type    : 'POST'
     }).done(function() {
       console.log('Signed out');
       App.reset();
@@ -58,17 +58,31 @@ App.User = Backbone.Model.extend({
 
   // return level or set if provided
   level: function(level) {
-    settings = this.get('settings');
+    settings = this.settings();
 
     if (typeof(settings) != 'object') settings = {};
-    if (!settings.jlpt) settings.jlpt = null;
+    if (!settings.level) settings.level = null;
 
     if (level) {
-      settings.jlpt = level;
-      this.set('settings', settings);
+      settings.level = level;
+      this.settings(settings);
     }
 
-    return settings.jlpt;
+    return settings.level;
+  },
+  
+  // return or set settings object
+  // needed to call change event on set
+  settings: function(settings) {
+    if (settings) {
+      this.set('settings', settings);
+      this.trigger('change');
+    }
+    else {
+      settings = this.get('settings');
+    }
+    
+    return settings;
   }
 });
 

@@ -14,7 +14,10 @@ class CardsController < ApplicationController
 
   # POST /cards/next
   def next
-
+    
+    # simulate latency
+    sleep 0.5
+    
     @cards = []
 
     # no of cards to return (max 20)
@@ -29,8 +32,7 @@ class CardsController < ApplicationController
     if current_user then
       @cards = current_user.cards_next(limit, jlpt, card_not_in)
     else
-      Kanji.order("RANDOM()")
-       .where(:jlpt => jlpt)
+      Kanji.where(:jlpt => jlpt)
        .where('id not in (?)', kanji_not_in)
        .limit(limit - @cards.length)
        .each { |kanji|

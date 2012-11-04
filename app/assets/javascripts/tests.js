@@ -23,34 +23,22 @@ App.Test = Backbone.Model.extend({
     // blank result to start
     this.result = null;
   },
-
-  correct: function() {
-    if (this.result == null) {
-      this.result = 'correct';
-      this.card.correct(this.type);
-    }
-  },
-
-  fail: function() {
-    if (this.result == null) {
-      this.result = 'incorrect';
-      this.card.resetTests();
-    }
-  },
   
-  check: function(card) {
-    var answer = (card == this.card);
+  check: function(answer) {
+    var result = (answer == this.card);
     
-    if (answer == true) {
+    if (result == true) {
       this.trigger('completed correct');
-      if (!this.result) this.result = 'correct'
+      if (!this.result) this.result = 'correct';
+      if (this.result == 'incorrect') this.card.resetTests();
+      if (this.result == 'correct') this.card.completedTest(this.type);
     }
     else {
       this.trigger('incorrect');
       if (!this.result) this.result = 'incorrect'
     }
     
-    return answer;    
+    return result;    
   }
 
 });
@@ -93,9 +81,10 @@ App.TesterView = Backbone.View.extend({
       App.currentTest = test;
       // Set callback to start next test once completed
       test.on("completed", function(){
-        setTimeout(function(){ v.nextTest(); }, App.options.speed);
+        setTimeout(function(){ v.nextTest(); }, App.options.speed*2);
       });
       // Show test
+      // TODO: only animate if replacing old test
       App.a.slide(v.$el, new App.TestView({model: test}).$el);
     }
     else {

@@ -19,16 +19,16 @@ App.Card = Backbone.Model.extend({
     });
   },
 
-  correct: function(test) {
-    this.tests[test.id] += 1;
+  completedTest: function(type) {
+    this.tests[type.id] -= 1;
 
-    // if card has been correctly tested enough
+    // If card has been correctly tested enough
     if (this.remainingTests().length == 0) {
-      // increment revisions by one
+      // Increment revisions by one
       this.set('revisions', this.get('revisions') + 1);
       this.resetTests();
       
-      // update card sets
+      // Update card sets
       App.testingCardSet.remove(this);
       App.learntCardSet.add(this);
       App.testingCardSet.update();
@@ -39,16 +39,16 @@ App.Card = Backbone.Model.extend({
   resetTests: function() {
     this.tests = {};
     var tests = this.tests;
-    _.each(App.testTypes, function(value){
-      tests[value.id] = 0;
+    _.each(App.testTypes, function(type){
+      tests[type.id] = type.times;
     });
   },
 
   // return array of tests not yet completed
   remainingTests: function() {
     var card = this;
-    return _.filter(App.testTypes, function(value){
-      return (card.canTest(value) && card.tests[value.id] < value.times);
+    return _.filter(App.testTypes, function(type){
+      return (card.canTest(type) && card.tests[type.id] > 0);
     });
   },
 
