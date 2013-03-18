@@ -17,7 +17,7 @@ class KanjisController < ApplicationController
   # GET /kanjis/1
   # GET /kanjis/1.json
   def show
-    if params[:id].is_a? Fixnum then
+    if params[:id].to_i > 0 then
       @kanji = Kanji.find(params[:id])
     else
       @kanji = Kanji.find_by_literal(params[:id].scan(/./))
