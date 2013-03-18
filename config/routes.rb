@@ -8,7 +8,8 @@ App::Application.routes.draw do
   match "/cards/next" => "cards#next"
   
   resources :users
-  resources :kanjis
+  match "/kanjis" => "kanjis#index"
+  match "/kanjis/:id" => "kanjis#show"
   resources :cards
   resources :identities
 
