@@ -18,9 +18,16 @@ group :assets do
   # gem 'therubyracer'
 
   gem 'uglifier', '>= 1.0.3'
+  
+  # Bootstrap
+  gem "less-rails"
+  gem "twitter-bootstrap-rails"
+
+  # Backbone
+  gem "rails-backbone", "~> 0.9.10"
 end
 
-gem 'jquery-rails', "~> 2.2.1"
+gem 'jquery-rails', "~> 2.1.3"
 gem 'execjs'
 gem 'therubyracer'
 gem 'nokogiri'
@@ -39,4 +46,4 @@ gem 'bcrypt-ruby', '~> 3.0.0'
 # gem 'capistrano'
 
 # To use debugger
-gem 'ruby-debug19', :require => 'ruby-debug'
+gem 'debugger'

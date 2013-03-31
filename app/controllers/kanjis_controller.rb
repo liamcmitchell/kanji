@@ -6,7 +6,6 @@ class KanjisController < ApplicationController
     limit = params[:limit].nil? ? 50 : [params[:limit].to_i, 50].min
     random = params[:sort] == 'random' ? 'RANDOM()' : ''
     @kanjis = Kanji.order(random).where({:jlpt => params[:jlpt]}).where('literal not in (?)', not_in).limit(limit)
-    #@var = params[:sort] # for debugging
     
     respond_to do |format|
       format.html # index.html.erb

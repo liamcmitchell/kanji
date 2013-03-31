@@ -1,25 +1,4 @@
-# display messages to the user
-App.message = (message, type = 'info') ->
-  App.messages.add(type: type, message: message)
-  
-App.Message = Backbone.Model.extend(
-  defaults: ->
-    type: 'info'
-    seen: false
-  initialize: ->
-    new App.MessageView(model: this)
-)
-
-App.Messages = Backbone.Collection.extend(
-  model: App.Message
-  initialize: ->
-    App.currentUser.on('signed-out', =>
-      this.reset()
-    )
-    this.view = new App.MessagesView(model:this)
-)
-
-App.MessageView = Backbone.View.extend(
+App.Views.Message = Backbone.View.extend(
   className: 'message'
   initialize: ->
     this.render()
@@ -31,7 +10,7 @@ App.MessageView = Backbone.View.extend(
     'click .hide': 'hide'
   show: ->
     this.$el.css(opacity:0)
-    App.messages.view.$el.append(this.$el);
+    App.Models.Messages.view.$el.append(this.$el);
     App.show(this.$el)
     this.timer = setTimeout(
       => this.hide(),
@@ -44,7 +23,7 @@ App.MessageView = Backbone.View.extend(
     )
 )
 
-App.MessagesView = Backbone.View.extend(
+App.Views.Messages = Backbone.View.extend(
   el: '#messages'
   initialize: ->
     this.adjust()

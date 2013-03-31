@@ -1,0 +1,169 @@
+@import "twitter/bootstrap/bootstrap";
+@import "twitter/bootstrap/responsive";
+
+// Set the correct sprite paths
+@iconSpritePath: asset-path("twitter/bootstrap/glyphicons-halflings.png");
+@iconWhiteSpritePath: asset-path("twitter/bootstrap/glyphicons-halflings-white.png");
+
+// Set the Font Awesome (Font Awesome is default. You can disable by commenting below lines)
+// Note: If you use asset_path() here, your compiled bootstrap_and_overrides.css will not
+//       have the proper paths. So for now we use the absolute path.
+@fontAwesomeEotPath: asset-path("fontawesome-webfont.eot?v=3.0.2");
+@fontAwesomeEotPath_iefix: asset-path("fontawesome-webfont.eot?#iefix&v=3.0.2");
+@fontAwesomeWoffPath: asset-path("fontawesome-webfont.woff?v=3.0.2");
+@fontAwesomeTtfPath: asset-path("fontawesome-webfont.ttf?v=3.0.2");
+
+// Font Awesome
+@import "fontawesome";
+
+// Glyphicons
+//@import "twitter/bootstrap/sprites.less";
+
+// Your custom LESS stylesheets goes here
+//
+// Since bootstrap was imported above you have access to its mixins which
+// you may use and inherit here
+//
+// If you'd like to override bootstrap's own variables, you can do so here as well
+// See http://twitter.github.com/bootstrap/customize.html#variables for their names and documentation
+//
+// Example:
+// @linkColor: #ff0000;
+
+@grey-light:#ececea;
+@grey:#dfdddb;
+@grey-dark:#c5c5c4;
+@grey-darker:#5f5f5e;
+@grey-darkest:#1f1f1f;
+@blue:#2e59ff;
+@green:#41ff20;
+@yellow:#e6e82d;
+@red:#ff3912;
+
+// Bootstrap overrides
+@linkColor: @grey-darkest;
+
+.rounded {
+  @radius:10px;
+  -webkit-border-radius: @radius; -moz-border-radius: @radius; border-radius: @radius;
+  -moz-background-clip: padding; -webkit-background-clip: padding-box; background-clip: padding-box;
+}
+.shadow(@color:@grey-dark) {
+  @blur:10px;
+  -webkit-box-shadow: 0px 0px @blur 1px @color;
+     -moz-box-shadow: 0px 0px @blur 1px @color;
+          box-shadow: 0px 0px @blur 1px @color;
+}
+body, button, input, select, textarea { font-family: sans-serif; color: @grey-darkest; }
+a {font-weight:bold;color:@grey-darkest;text-decoration:none;}
+a:hover {text-decoration:underline;}
+#app {position:relative;margin:10px;}
+#control {}
+#title {font-weight:bold;float:left;}
+#user {float:right;}
+#learnt {text-align:center;display:none;}
+#canvas {width:960px;margin:auto;}
+.app-data {display:none;}
+.box {
+  margin:20px auto;
+  background:@grey-light none;
+  padding:20px;
+  border-bottom:2px solid @grey-dark;
+  .rounded;
+  &.incorrect {
+    .shadow(@red);
+  }
+  &.correct {
+    .shadow(@green);
+  }
+}
+.test .options {
+  width:720px;
+}
+.options .card {
+  float:left;
+  width:100px;
+  margin:20px;
+  min-height:100px;
+  cursor: pointer;
+  .literal {
+    text-align:center;
+    font-size:72px;
+    line-height:1;
+  }
+}
+.question .card {
+  width:160px;
+  min-height:180px;
+  font-size:24px;
+  .literal {
+    text-align:center;
+    font-size:150px;
+    line-height:1;
+  }
+}
+.question .card > div, .options .card > div {
+  display:none;
+}
+.question .card, .options .card {
+  &.literal .literal,
+  &.meaning .meaning,
+  &.reading .reading {
+    display:block;
+  }
+}
+.onyomi, .kunyomi {
+  font-size:120%;
+}
+.kunyomi .not-reading {
+  color:lighten(@grey-darkest, 40%);
+}
+.options {
+  margin:20px auto;
+
+}
+.button {
+  cursor:pointer;
+}
+.dialogue {
+  margin:0 auto;
+  width:360px;
+}
+span.error {color:@red;padding:0 10px;}
+
+form.error {
+  input[type=text],
+  input[type=password] {
+    border:1px solid @red;
+  }
+}
+
+.loading {
+  text-align:center;
+  margin-top:100px;
+}
+
+#messages {
+  width:400px;
+  position:absolute;
+  top:20px;
+  z-index:100;
+}
+
+.message {
+  .rounded;
+  background:@grey-light none;
+  margin:20px 0;
+  padding:10px;
+  &.error {
+    .shadow(@red);
+  }
+  &.info {
+    .shadow(@yellow);
+  }
+  .hide {
+    float:right;
+    font-weight:bold;
+    cursor:pointer;
+  }
+}
