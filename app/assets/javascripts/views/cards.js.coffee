@@ -15,14 +15,14 @@ App.Views.CardView = Backbone.View.extend(
         pieces = kunyomi[i].split(".")
         kunyomi[i] = pieces[0] + "<span class=\"not-reading\">" + pieces[1] + "</span>"
       i++
+
     variables =
       literal: kanji.literal
       meaning: kanji.meaning
       onyomi: kanji.onyomi
-      kunyomi: kunyomi
+      kunyomi: kunyomi.join('')
 
-    template = _.template($("#card-template").html(), variables)
-    @$el.html template
+    @$el.html HandlebarsTemplates['card'](variables)
 
   show: (c) ->
     all = "literal meaning reading"

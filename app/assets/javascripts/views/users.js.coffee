@@ -6,10 +6,10 @@ App.Views.User = Backbone.View.extend(
     @model.on "change:name", ->
       v.render()
 
-
   render: ->
-    @$el.html _.template($("#user-template").html(),
-      user: @model
+    @$el.html HandlebarsTemplates['user'](
+      isSignedIn: @model.isSignedIn()
+      name: @model.get('name')
     )
 
   events: {}
@@ -20,7 +20,7 @@ App.Views.UserSettings = Backbone.View.extend(
     @render()
 
   render: ->
-    @$el.html _.template($("#user-settings-template").html())
+    @$el.html HandlebarsTemplates['user-settings'](isSignedIn: App.currentUser.isSignedIn())
 )
 App.Views.UserSignIn = Backbone.View.extend(
   className: "sign-in dialogue"
@@ -28,7 +28,7 @@ App.Views.UserSignIn = Backbone.View.extend(
     @render()
 
   render: ->
-    @$el.html _.template($("#user-sign-in-template").html())
+    @$el.html HandlebarsTemplates['user-sign-in']()
 
   events:
     "submit #sign-in": "signInSubmit"
@@ -63,9 +63,7 @@ App.Views.UserJlpt = Backbone.View.extend(
   render: ->
     title = "Select JLPT level"
     title += " or sign in for saved settings"  unless App.currentUser.isSignedIn()
-    @$el.html _.template($("#jlpt-dialogue-template").html(),
-      title: title
-    )
+    @$el.html HandlebarsTemplates['jlpt-dialogue']({title: title})
 
   events:
     "click .button:eq(0)": ->

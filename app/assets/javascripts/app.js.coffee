@@ -29,11 +29,6 @@ window.App =
     $(document).ajaxError (event, request, settings) ->
       console.log('AJAX failed', event, request, settings)
 
-    # Use alternate template settings so it will play nice in erb
-    _.templateSettings =
-      interpolate: /\<\@\=(.+?)\@\>/gim
-      evaluate: /\<\@(.+?)\@\>/gim
-
     App.lock            = false
     App.$canvas         = $('#canvas')
     App.router          = new App.Routers.Main

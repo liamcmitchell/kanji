@@ -25,6 +25,9 @@ group :assets do
 
   # Backbone
   gem "rails-backbone", "~> 0.9.10"
+
+  # Handlebars
+  gem 'handlebars_assets'
 end
 
 gem 'jquery-rails', "~> 2.1.3"

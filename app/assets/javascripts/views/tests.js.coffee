@@ -22,7 +22,7 @@ App.Views.Tester = Backbone.View.extend(
 
         
         # Show loading screen
-        v.$el.html _.template($("#test-loading").html())
+        v.$el.html '<div class="loading">Loading...</div>'
         return
     if test
       
@@ -52,8 +52,7 @@ App.Views.Test = Backbone.View.extend(
     v = this # view
     t = @model # test
     
-    # load template
-    v.$el.html _.template($("#test-template").html())
+    v.$el.html '<div class="question"></div><div class="options"></div>'
     
     # add question card
     questionCard = new App.Views.CardView(model: t.card).show(t.type.question)
