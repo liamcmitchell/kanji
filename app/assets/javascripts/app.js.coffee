@@ -15,6 +15,13 @@ window.App =
     speed: 150               # base unit for animation and pause speed
     testingCardsSize: 7    # number of cards that will be tested at the same time
 
+  testTypes: [
+    {id: 1, question: 'literal', answer: 'meaning', times: 1},
+    {id: 2, question: 'meaning', answer: 'literal', times: 0},
+    {id: 3, question: 'literal', answer: 'reading', times: 0},
+    {id: 4, question: 'reading', answer: 'literal', times: 0}
+  ]
+
   init: ->
 
     console.log('App', App)
@@ -38,14 +45,8 @@ window.App =
     App.previousTests   = new App.Models.Tests
     App.Models.Messages        = new App.Models.Messages
 
-    App.Models.TestTypes = [
-      {id: 1, question: 'literal', answer: 'meaning', times: 1},
-      {id: 2, question: 'meaning', answer: 'literal', times: 0},
-      {id: 3, question: 'literal', answer: 'reading', times: 0},
-      {id: 4, question: 'reading', answer: 'literal', times: 0}
-    ]
-
     # Set up keyboard listeners
+    # TODO move to views
     $(document).bind 'keydown.1', -> App.$canvas.find('.options > div:eq(0)').trigger('click')
     $(document).bind 'keydown.2', -> App.$canvas.find('.options > div:eq(1)').trigger('click')
     $(document).bind 'keydown.3', -> App.$canvas.find('.options > div:eq(2)').trigger('click')
@@ -56,7 +57,7 @@ window.App =
 
     Backbone.history.start()
 
-  # reset app (when user changes)
+  # Reset app (when user changes)
   # TODO move to event bindings?
   reset: ->
     App.currentUser.clear()
@@ -94,11 +95,11 @@ window.App =
     show: (object, callback) ->
       object.css({position: 'relative', left: '100px'}).animate({opacity: 1, left: '0'}, App.options.speed, 'swing', callback)
 
-  # form helper
+  # Form helper
   disableForm: (form) -> 
     form.find('input').attr('disabled', 'disabled')
 
-  # form helper
+  # Form helper
   resetForm: (form) ->
     form.find('input:disabled').removeAttr('disabled')
     form.removeClass('error')

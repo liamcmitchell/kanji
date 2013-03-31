@@ -33,13 +33,13 @@ App.Models.Card = Backbone.Model.extend(
   resetTests: ->
     @tests = {}
     tests = @tests
-    _.each App.Models.TestTypes, (type) ->
+    _.each App.testTypes, (type) ->
       tests[type.id] = type.times
 
   # Return array of tests not yet completed
   remainingTests: ->
     card = this
-    _.filter App.Models.TestTypes, (type) ->
+    _.filter App.testTypes, (type) ->
       card.canTest(type) and card.tests[type.id] > 0
   
   # Checks if test can be applied to card

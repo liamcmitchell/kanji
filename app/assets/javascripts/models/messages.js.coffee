@@ -10,7 +10,7 @@ App.Models.Messages = Backbone.Collection.extend(
   model: App.Models.Message
   initialize: ->
     App.currentUser.on('signed-out', =>
-      this.reset()
+      @reset()
     )
-    this.view = new App.Views.Messages(model:this)
+    @view = new App.Views.Messages(model:this)
 )

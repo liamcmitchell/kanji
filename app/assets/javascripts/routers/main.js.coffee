@@ -9,7 +9,7 @@ App.Routers.Main = Backbone.Router.extend(
     "*splat"          : "defaultRoute"
 
   initialize: ->
-    this.on 'all', (event) ->
+    @on 'all', (event) ->
       console.log(event)
   
   test: ->
@@ -30,7 +30,7 @@ App.Routers.Main = Backbone.Router.extend(
   signin: ->
     # redirect to root if user is already logged in
     if (App.currentUser.isSignedIn()) 
-      this.navigate("", true)
+      @navigate("", true)
     # otherwise show signin page
     else 
       App.canvasShow(new App.Views.UserSignIn())
@@ -40,6 +40,6 @@ App.Routers.Main = Backbone.Router.extend(
   
   defaultRoute: (splat) ->
     # redirect all other paths to root
-    this.navigate("", true)
+    @navigate("", true)
 
 )
