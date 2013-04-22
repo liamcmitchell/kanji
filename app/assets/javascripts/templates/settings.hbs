@@ -1,0 +1,18 @@
+<form>
+  <fieldset>
+    <legend>Settings</legend>
+    <label>Level</label>
+    <select id="level">
+      <option value="">Choose a level</option>
+    	{{#each levels}}
+    	  <option value="{{id}}">{{desc}}</option>
+    	{{/each}}
+		</select>
+    <span class="help-block">Difficulty level to get new cards from.</span>
+    <button type="submit" class="btn">Update</button>
+  </fieldset>
+</form>
+
+{{#if isSignedIn}}
+  <p><a href="#sign-out">Sign out</a></p>
+{{/if}}

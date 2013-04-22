@@ -1,0 +1,5 @@
+<h3>Select JLPT level</h3>
+<p>{{#each levels}}
+  <button class="btn btn-block" level="{{id}}">{{desc}}</button>
+{{/each}}</p>
+{{#unless isSignedIn}}<p><a href="#sign-in">or sign in or create account for saved settings.</a></p>{{/unless}}

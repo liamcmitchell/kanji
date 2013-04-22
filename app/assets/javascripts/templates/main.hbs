@@ -1,0 +1,13 @@
+<div id="control" class="clearfix">
+  <div id="title"><a href="/#">Kanji Practice</a></div>
+  <div id="user">
+  	  {{#if isSignedIn}}
+		    <a class="name" href="#settings">{{name}}</a>
+		  {{else}}
+		    <a class="sign-in" href="#sign-in">Sign in or create account</a>
+		  {{/if}}
+  </div>
+  <div id="learnt"></div>
+</div>
+<div id="messages-wrapper"><div id="messages"></div></div>
+<div id="content"></div>
