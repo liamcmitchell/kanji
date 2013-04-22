@@ -12,41 +12,55 @@ class CardsController < ApplicationController
     end
   end
 
-  # POST /cards/next
-  def next
-    
-    # simulate latency
-    sleep 0.5
-    
-    @cards = []
+  # POST /cards/current
+  # Return set of cards for testing now.
+  def current
 
-    # no of cards to return (max 20)
-    limit = [params[:limit].to_i, 20].min
-    # jlpt level must be 1-4
-    jlpt = (1..4) === params[:level].to_i ? params[:level].to_i : 4
-    # cards to filter out
-    card_not_in = params[:card_not_in].to_a.collect {|v| v.to_i }
-    # kanji to filter out
-    kanji_not_in = params[:kanji_not_in].to_a.push(0).collect {|v| v.to_i }
+    # Set maximum
+    limit = 20
+    if params[:limit] then
+      limit = [params[:limit].to_i, limit].min
+    end
 
     if current_user then
-      @cards = current_user.cards_next(limit, jlpt, card_not_in)
+
+      # Get cards to revise
+      @cards = current_user.cards.to_revise.limit(limit)
+      # Filter out cards
+      if params[:card_not_in].kind_of? Array then
+        @cards = @cards.excluding(params[:cards_not_in])
+      end
+
+      # And when there are no more cards to revise
+      if @cards.length < limit then
+        # Make more cards
+        kanjis = Kanji.where_level(params[:level]).excluding(current_user.kanjis).limit(limit - @cards.length)
+        new_cards = kanjis.collect do |kanji|
+          current_user.cards.create(:kanji_id => kanji.id, :revisions => 0)
+        end
+        @cards.concat(new_cards)
+      end
+
     else
-      Kanji.where(:jlpt => jlpt)
-       .where('id not in (?)', kanji_not_in)
-       .limit(limit - @cards.length)
-       .each { |kanji|
+      # For anonymous users we make cards but don't save them
 
-        # make dummy cards (without an id)
-        @cards << {:revisions => 0, :kanji => kanji}
-        
-      }
+      kanjis = Kanji.where_level(params[:level]).limit(limit)
+
+      # Filter out kanji
+      if params[:kanji_not_in].kind_of? Array then
+        kanjis = kanjis.excluding(params[:kanji_not_in])
+      end
+      
+      @cards = kanjis.collect do |kanji|
+        Card.new(:kanji => kanji, :kanji_id => kanji.id, :revisions => 0)
+      end
+
     end
-
+    
     respond_to do |format|
-      format.html { render :index }
       format.json { render :json => @cards }
     end
+
   end
   
   # PUT /cards/1

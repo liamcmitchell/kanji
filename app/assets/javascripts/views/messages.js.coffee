@@ -10,7 +10,7 @@ App.Views.Message = Backbone.View.extend(
     'click .hide': 'hide'
   show: ->
     @$el.css(opacity:0)
-    App.Models.Messages.view.$el.append(@$el);
+    App.Collections.Messages.view.$el.append(@$el);
     App.show(@$el)
     @timer = setTimeout(
       => @hide(),

@@ -65,11 +65,14 @@ a:hover {text-decoration:underline;}
 #canvas {width:960px;margin:auto;}
 .app-data {display:none;}
 .box {
-  margin:20px auto;
+  margin:0 0 20px;
   background:@grey-light none;
   padding:20px;
   border-bottom:2px solid @grey-dark;
   .rounded;
+}
+.card {
+  line-height: 1.2;
   &.incorrect {
     .shadow(@red);
   }
@@ -77,14 +80,7 @@ a:hover {text-decoration:underline;}
     .shadow(@green);
   }
 }
-.test .options {
-  width:720px;
-}
 .options .card {
-  float:left;
-  width:100px;
-  margin:20px;
-  min-height:100px;
   cursor: pointer;
   .literal {
     text-align:center;
@@ -93,8 +89,6 @@ a:hover {text-decoration:underline;}
   }
 }
 .question .card {
-  width:160px;
-  min-height:180px;
   font-size:24px;
   .literal {
     text-align:center;
@@ -115,12 +109,8 @@ a:hover {text-decoration:underline;}
 .onyomi, .kunyomi {
   font-size:120%;
 }
-.kunyomi .not-reading {
+.kunyomi .suffix {
   color:lighten(@grey-darkest, 40%);
-}
-.options {
-  margin:20px auto;
-
 }
 .button {
   cursor:pointer;
@@ -143,27 +133,4 @@ form.error {
   margin-top:100px;
 }
 
-#messages {
-  width:400px;
-  position:absolute;
-  top:20px;
-  z-index:100;
-}
 
-.message {
-  .rounded;
-  background:@grey-light none;
-  margin:20px 0;
-  padding:10px;
-  &.error {
-    .shadow(@red);
-  }
-  &.info {
-    .shadow(@yellow);
-  }
-  .hide {
-    float:right;
-    font-weight:bold;
-    cursor:pointer;
-  }
-}

@@ -3,43 +3,36 @@ App.Routers.Main = Backbone.Router.extend(
   routes: 
     ""                : "test"
     "settings"        : "settings"
-    "settings/level"  : "settings_level"
     "sign-in"         : "signin"
     "sign-out"        : "signout"
     "*splat"          : "defaultRoute"
 
-  initialize: ->
-    @on 'all', (event) ->
-      console.log(event)
+  # Holds singleton views
+  cache: {}
+
+  # Helper function to cache singleton views and pass to main view
+  show: (view) ->
+    App.main.content.show new App.Views[view]
   
   test: ->
-    # Make sure we have level needed to test
-    if (!App.currentUser.level())
-      App.destination = '' # come back after choosing level
-      App.router.navigate('settings/level', {trigger: true})
-      return
-    
-    App.canvasShow(new App.Views.Tester())
+    @show 'Tester'
   
   settings: ->
-    App.canvasShow(new App.Views.UserSettings())
-  
-  settings_level: ->
-    App.canvasShow(new App.Views.UserJlpt())
+    @show 'Settings'
   
   signin: ->
-    # redirect to root if user is already logged in
-    if (App.currentUser.isSignedIn()) 
+    # Redirect to root if user is already logged in
+    if (App.user.isSignedIn()) 
       @navigate("", true)
-    # otherwise show signin page
     else 
-      App.canvasShow(new App.Views.UserSignIn())
+      @show 'SignIn'
   
   signout: ->
-    App.currentUser.signOut()
+    # No view needed
+    App.user.signOut()
   
   defaultRoute: (splat) ->
-    # redirect all other paths to root
+    # Redirect all other paths to root
     @navigate("", true)
 
 )

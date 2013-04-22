@@ -5,7 +5,7 @@ App::Application.routes.draw do
   match "/signout" => "sessions#destroy", :as => :signout
   match "/auth/failure" => "sessions#new"
   
-  match "/cards/next" => "cards#next"
+  match "/cards/current" => "cards#current"
   
   resources :users
   match "/kanjis" => "kanjis#index"
