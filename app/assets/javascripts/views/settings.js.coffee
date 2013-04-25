@@ -10,7 +10,6 @@ App.Views.Settings = Backbone.View.extend(
       isSignedIn: App.user.isSignedIn()
       levels: App.levels
     )
-    console.log "option[value=" + App.user.level() + "]"
     @$("option[value=" + App.user.level() + "]").attr('selected', 'selected')
 
   events:

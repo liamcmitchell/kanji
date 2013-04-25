@@ -15,36 +15,32 @@ App.Views.SignIn = Backbone.View.extend(
   signIn: (event) ->
     event.preventDefault()
     $form = $(event.currentTarget)
-    $.ajax
+    App.ajax
       url: '/auth/identity/callback'
-      type: 'POST'
-      data: $form.serialize()
-      success: (data, textStatus, jqXHR) ->
-        # Server responds with json false if login failed
-        if data
-          window.location = "/"
-        else
-          # Display error to the user
-          @enable $form
-          $form.addClass "error"
-          App.Models.Message "Sign in failed", "error"
+      data: $form.serializeArray()
+      success: (data) =>
+        window.location = "/"
+      fail: (data) =>
+        # Display error to the user
+        @enable $form
+        $form.addClass "error"
+        if data.errors
+          App.message data, "error"
     @disable $form
 
   register: (event) ->
     event.preventDefault()
     $form = $(event.currentTarget)
-    $.ajax
+    App.ajax
       url: '/auth/identity/register'
-      type: 'POST'
-      data: $form.serialize()
-      success: (data, textStatus, jqXHR) ->
-        # Server responds with json false if login failed
-        if data
-          window.location = "/"
-        else
-          # Display error to the user
-          @enable $form
-          $form.addClass "error"
-          App.Models.Message "Registration failed", "error"
+      data: $form.serializeArray()
+      success: (data) =>
+        window.location = "/"
+      fail: (data) =>
+        # Display error to the user
+        @enable $form
+        $form.addClass "error"
+        if data.errors
+          App.message data, "error"
     @disable $form
 )

@@ -27,23 +27,22 @@ App.Models.User = Backbone.Model.extend(
     # Only check server if we can and are short
     if @canGetCards()
       @gettingCards = true
-      $.ajax(
+      App.ajax
         url: "/cards/current"
-        type: "POST"
         data:
           level: @level()
           limit: App.options.testingCardsSize - @cards.testable().length
           card_not_in: @cards.pluck("id")
           kanji_not_in: _.pluck(@cards.pluck("kanji"), "id")
-      ).done((data, textStatus, jqXHR) =>
-        @gettingCards = false
-        if !data or !data.length
-          console.log "Server returned empty result", data, jqXHR
-          # TODO alert user if they are running out of cards.
-        else
-          @cards.add data
-      ).error () =>
-        @gettingCards = false
+        success: (data) =>
+          @gettingCards = false
+          if !data or !data.length
+            App.message "No cards found.", "error"
+          else
+            @cards.add data
+        fail: (data) =>
+          @gettingCards = false
+          App.message data.errors, "error"
 
   # Return level or set if provided.
   level: (level) ->
@@ -68,10 +67,10 @@ App.Models.User = Backbone.Model.extend(
 
   # TODO shouldn't be here.
   signOut: ->
-    $.ajax(
+    App.ajax
       url: "/signout"
       type: "GET"
-    ).done ->
-      window.location = "/"
+      success: ->
+        window.location = "/"
 
 )

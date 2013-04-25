@@ -35,23 +35,47 @@ window.App =
 
   init: ->
 
-    # Set ajax defaults
-    $.ajaxSetup
-      data:
-        authenticity_token: $('meta[name=csrf-token]').attr("content")
-      dataType: "json"
+    @authenticity_token = $('meta[name=csrf-token]').attr("content")
 
-    # Log all ajax errors
-    $(document).ajaxError (event, request, settings) ->
-      console.log('AJAX failed', event, request, settings)
-
-    App.user     = new App.Models.User(USER)
-    App.tests    = new App.Collections.Tests
-    App.main     = new App.Views.Main
-    App.router   = new App.Routers.Main
-    App.messages = new App.Collections.Messages
-
+    @user     = new @Models.User(USER)
+    @tests    = new @Collections.Tests
+    @messages = new @Collections.Messages
+    @main     = new @Views.Main
+    @router   = new @Routers.Main
+    
     Backbone.history.start()
+
+  # Wrapper for jQuery.ajax()
+  ajax: (settings) ->
+    defaults = 
+      dataType: "json"
+      type: "POST"
+      data:
+        authenticity_token: @authenticity_token
+      error: ( jqXHR, textStatus, errorThrown) ->
+        # Use our own callback which can handle errors in json format
+        if typeof @fail is "function"
+          try
+            data = jQuery.parseJSON jqXHR.responseText
+          catch e
+            data = {errors: [jqXHR.responseText]}
+          @fail data, textStatus, jqXHR
+          
+
+    # Merge settings with defaults
+    jQuery.extend true, defaults, settings
+      
+    jQuery.ajax defaults
+
+  # Display a message
+  message: (message, type = 'info') ->
+    # Handle our json error objects
+    if message.errors
+      message = message.errors.join "<br>"
+
+    App.messages.add
+      message: message
+      type: type
 
 # Extend backbone objects
 

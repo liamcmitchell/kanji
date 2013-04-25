@@ -22,10 +22,7 @@ module OmniAuth
 end
 
 Rails.application.config.middleware.use OmniAuth::Builder do
-  provider :identity, on_failed_registration: lambda { |env|
-    IdentitiesController.action(:new).call(env)
-  },
-  on_failed_verification: lambda { |env|
-    SessionsController.action(:new).call(env)
-  }
+  provider :identity, 
+    :on_failed_registration => IdentitiesController.action(:new),
+    :on_failed_verification => SessionsController.action(:error)
 end

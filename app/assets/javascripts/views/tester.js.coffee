@@ -17,7 +17,8 @@ App.Views.Tester = Backbone.View.extend(
     if test = @tests.next()
       
       # Set callback to show next test once completed
-      @listenTo test, "completed", =>
+      @listenTo test, "completed", ->
+        @stopListening test
         @show @next()
 
       new App.Views.Test(model: test)

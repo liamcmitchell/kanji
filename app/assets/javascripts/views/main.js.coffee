@@ -5,6 +5,7 @@ App.Views.Main = Backbone.View.extend(
   initialize: ->
 
     @render()
+    @messagesView = new App.Views.Messages(model: App.messages)
 
     # Frame view
     @content = new Backbone.View(el: "#content")

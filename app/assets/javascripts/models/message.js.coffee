@@ -1,9 +1,9 @@
 App.Models.Message = Backbone.Model.extend(
 
   defaults: ->
-    text: ''
+    message: ''
     type: 'info'
-    seen: false
+    closed: false
 
   initialize: ->
     
