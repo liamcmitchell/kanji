@@ -2,52 +2,48 @@ source 'https://rubygems.org'
 
 gem "rails", "~> 3.2.12"
 
-# Bundle edge Rails instead:
-# gem 'rails', :git => 'git://github.com/rails/rails.git'
+# XML library for importing kanji (rake task)
+gem 'nokogiri'
 
-gem 'sqlite3'
-
+# Authentication management
+gem 'omniauth-identity'
+gem 'bcrypt-ruby', '~> 3.0.0'
 
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
-  gem 'sass-rails',   '~> 3.2.3'
-  gem 'coffee-rails', '~> 3.2.1'
-
-  # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-  # gem 'therubyracer'
-
-  gem 'uglifier', '>= 1.0.3'
   
-  # Bootstrap
+  # Javascript support
+  gem 'execjs'
+  gem 'therubyracer'
+  
+  # Javascript
+  gem 'jquery-rails', "~> 2.1.3"
+  gem "rails-backbone", "~> 0.9.10"
+  gem 'handlebars_assets'
+  gem 'coffee-rails', '~> 3.2.1'
+  gem 'uglifier', '>= 1.0.3'
+
+  # CSS
   gem "less-rails"
   gem "twitter-bootstrap-rails"
 
-  # Backbone
-  gem "rails-backbone", "~> 0.9.10"
-
-  # Handlebars
-  gem 'handlebars_assets'
 end
 
-gem 'jquery-rails', "~> 2.1.3"
-gem 'execjs'
-gem 'therubyracer'
-gem 'nokogiri'
-gem 'omniauth-identity'
+group :production do
 
-# To use ActiveModel has_secure_password
-gem 'bcrypt-ruby', '~> 3.0.0'
+  gem 'mysql2'
 
-# To use Jbuilder templates for JSON
-# gem 'jbuilder'
+end
 
-# Use unicorn as the web server
-# gem 'unicorn'
+group :development do
 
-# Deploy with Capistrano
-gem 'capistrano'
-gem 'rvm-capistrano'
+  gem 'sqlite3'
+  
+  # Deploy with Capistrano
+  gem 'capistrano'
+  gem 'rvm-capistrano'
+  
+  gem 'debugger'
 
-# To use debugger
-gem 'debugger'
+end
