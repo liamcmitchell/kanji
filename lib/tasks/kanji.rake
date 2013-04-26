@@ -2,38 +2,52 @@ namespace :kanji do
   desc "Import kanji from XML"
   task :import => :environment do
     
-    # Loads Kanji from XML and saves in one transaction to save time
-    
+    puts "Loading XML file..."
     doc = Nokogiri::XML( File.open( Rails.root.join('lib','assets') + 'kanjidic2.xml' ) )
     
-    kanjis = []
+    puts "Building inserts..."
+    inserts = []
     
     doc.xpath( '//character' ).each do |node|
-    
-      literal = node.xpath( 'literal' ).first.content
-      k = Kanji.find_or_initialize_by_literal( literal )
       
-      k.literal = literal
+      insert = {}
+      
+      insert[:literal] = node.xpath( 'literal' ).first.content      
+      
       onyomis = []
       node.xpath( "reading_meaning/rmgroup/reading[@r_type='ja_on']" ).each { |n| onyomis.push n.content }
-      k.onyomi  = onyomis.join( ', ' )
+      insert[:onyomi]  = onyomis.join( ', ' )
+
       kunyomis = []
       node.xpath( "reading_meaning/rmgroup/reading[@r_type='ja_kun']" ).each { |n| kunyomis.push n.content }
-      k.kunyomi = kunyomis.join( ', ' )
+      insert[:kunyomi] = kunyomis.join( ', ' )
+      
       nanoris = []
       node.xpath( "reading_meaning/nanori" ).each { |n| nanoris.push n.content }
-      k.nanori  = nanoris.join( ', ' )
+      insert[:nanori]  = nanoris.join( ', ' )
+      
       meanings = []
       node.xpath( "reading_meaning/rmgroup/meaning" ).each { |n| meanings.push n.content unless n.has_attribute? 'm_lang' }
-      k.meaning = meanings.join( ', ' )
-      k.stroke  = node.xpath( "misc/stroke_count" ).first.content.to_i
-      k.jlpt    = node.xpath( "misc/jlpt" ).first.content.to_i unless node.xpath( "misc/jlpt" ).empty?
+      insert[:meaning] = meanings.join( ', ' )
+
+      insert[:stroke]  = node.xpath( "misc/stroke_count" ).first.content.to_i
+
+      jlpt = node.xpath( "misc/jlpt" )
+      insert[:jlpt]    = jlpt.empty? ? "" : jlpt.first.content.to_i
       
-      kanjis.push k
-      
+      inserts.push '("' + insert.values.join('", "') + '")'
+
     end
-    
-    ActiveRecord::Base.transaction { kanjis.each { |k| k.save } }
+
+    puts "Deleting previous data..."
+    Kanji.delete_all
+
+    puts "Inserting #{inserts.count} records into database..."
+    inserts = inserts.slice 0, 3
+    sql = "INSERT INTO kanjis 
+      (`literal`, `onyomi`, `kunyomi`, `nanori`, `meaning`, `stroke`, `jlpt`) 
+      VALUES #{inserts.join(", ")}"
+    ActiveRecord::Base.connection.execute sql
     
   end
 end

@@ -12,6 +12,7 @@ require "rvm/capistrano"
 set :application, "Kanji"
 set :repository,  "ssh://deploy@chad.liammitchell.co.nz/var/git/kanji.git"
 set :user, "deploy"
+set :use_sudo, false
 set :scm, :git 
 
 set :deploy_to, "/var/www/kanji"
@@ -25,6 +26,9 @@ role :db,  "kanji.liammitchell.co.nz", :primary => true # This is where Rails mi
 
 # If you are using Passenger mod_rails uncomment this:
 namespace :deploy do
+	task :setup do
+		 run "cd #{current_path}; rake db:schema:load ; rake kanji:import"
+	end
   task :start do ; end
   task :stop do ; end
   task :restart, :roles => :app, :except => { :no_release => true } do
