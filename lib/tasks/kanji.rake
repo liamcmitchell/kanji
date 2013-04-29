@@ -34,19 +34,22 @@ namespace :kanji do
 
       jlpt = node.xpath( "misc/jlpt" )
       insert[:jlpt]    = jlpt.empty? ? "" : jlpt.first.content.to_i
-      
-      inserts.push '("' + insert.values.join('", "') + '")'
+
+      inserts.push '(' + insert.values.collect { |v| ActiveRecord::Base.connection.quote(v) }.join(', ') + ')'
 
     end
 
     puts "Deleting previous data..."
     Kanji.delete_all
 
-    puts "Inserting #{inserts.count} records into database..."
-    sql = "INSERT INTO kanjis 
-      (`literal`, `onyomi`, `kunyomi`, `nanori`, `meaning`, `stroke`, `jlpt`) 
-      VALUES #{inserts.join(", ")}"
-    ActiveRecord::Base.connection.execute sql
+    batch_size = 100
+    puts "Inserting #{inserts.count} records into database in batches of #{batch_size}..."
+    inserts.each_slice batch_size do |batch|
+      sql = "INSERT INTO kanjis 
+        (`literal`, `onyomi`, `kunyomi`, `nanori`, `meaning`, `stroke`, `jlpt`) 
+        VALUES #{batch.join(", ")}"
+      ActiveRecord::Base.connection.execute sql
+    end
     
   end
 end
