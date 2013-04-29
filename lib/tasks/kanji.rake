@@ -43,7 +43,6 @@ namespace :kanji do
     Kanji.delete_all
 
     puts "Inserting #{inserts.count} records into database..."
-    inserts = inserts.slice 0, 3
     sql = "INSERT INTO kanjis 
       (`literal`, `onyomi`, `kunyomi`, `nanori`, `meaning`, `stroke`, `jlpt`) 
       VALUES #{inserts.join(", ")}"
