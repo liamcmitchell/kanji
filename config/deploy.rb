@@ -23,7 +23,7 @@ role :app, "kanji.liammitchell.co.nz"                          # This may be the
 role :db,  "kanji.liammitchell.co.nz", :primary => true # This is where Rails migrations will run
 
 # if you want to clean up old releases on each deploy uncomment this:
-# after "deploy:restart", "deploy:cleanup"
+after "deploy:restart", "deploy:cleanup"
 
 # If you are using Passenger mod_rails uncomment this:
 namespace :deploy do
