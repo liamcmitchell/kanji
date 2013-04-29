@@ -28,7 +28,7 @@ role :db,  "kanji.liammitchell.co.nz", :primary => true # This is where Rails mi
 # If you are using Passenger mod_rails uncomment this:
 namespace :deploy do
 	task :setup do
-		 run "cd #{current_path}; rake db:schema:load ; rake kanji:import"
+		 run "cd #{current_path}; rake RAILS_ENV=production db:schema:load ; rake RAILS_ENV=production kanji:import"
 	end
   task :start do ; end
   task :stop do ; end
