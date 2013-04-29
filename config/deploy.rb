@@ -1,13 +1,14 @@
 # Automatically precompile assets
 load "deploy/assets"
  
+# RVM integration
+set :rvm_ruby_string, :local
+before 'deploy:setup', 'rvm:install_rvm'   # install RVM
+before 'deploy:setup', 'rvm:install_ruby'  # install Ruby and create gemset, OR:
+require "rvm/capistrano"
+
 # Execute "bundle install" after deploy, but only when really needed
 require "bundler/capistrano"
- 
-# RVM integration
-set :rvm_type, :system
-set :rvm_ruby_string, :local
-require "rvm/capistrano"
  
 set :application, "Kanji"
 set :repository,  "ssh://deploy@chad.liammitchell.co.nz/var/git/kanji.git"

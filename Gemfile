@@ -9,6 +9,8 @@ gem 'nokogiri'
 gem 'omniauth-identity'
 gem 'bcrypt-ruby', '~> 3.0.0'
 
+gem 'mysql2'
+
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
@@ -27,12 +29,6 @@ group :assets do
   # CSS
   gem "less-rails"
   gem "twitter-bootstrap-rails"
-
-end
-
-group :production do
-
-  gem 'mysql2'
 
 end
 
