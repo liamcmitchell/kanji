@@ -1,6 +1,6 @@
 class Card < ActiveRecord::Base
   belongs_to :user
-  belongs_to :kanji
+  belongs_to :kanji, :foreign_key => :kanji_literal
   
   def as_json(options={})
     super(
@@ -9,17 +9,17 @@ class Card < ActiveRecord::Base
           :except => [:created_at, :updated_at]
         }
       }, 
-      :except => [:created_at, :updated_at, :user_id, :kanji_id]
+      :except => [:created_at, :updated_at, :user_id]
     )
   end
 
   def self.to_revise
-    where("revisions == 0
-      OR (revisions == 1 AND updated_at < '#{12.hours.ago()}')
-      OR (revisions == 2 AND updated_at < '#{36.hours.ago()}')
-      OR (revisions == 3 AND updated_at < '#{1.week.ago()}')
-      OR (revisions == 4 AND updated_at < '#{1.months.ago()}')
-      OR (revisions == 5 AND updated_at < '#{4.months.ago()}')
+    where("revisions = 0
+      OR (revisions = 1 AND updated_at < '#{12.hours.ago()}')
+      OR (revisions = 2 AND updated_at < '#{36.hours.ago()}')
+      OR (revisions = 3 AND updated_at < '#{1.week.ago()}')
+      OR (revisions = 4 AND updated_at < '#{1.months.ago()}')
+      OR (revisions = 5 AND updated_at < '#{4.months.ago()}')
     ")
   end
 

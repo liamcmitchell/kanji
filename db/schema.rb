@@ -11,14 +11,14 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130426080022) do
+ActiveRecord::Schema.define(:version => 20130506062136) do
 
   create_table "cards", :force => true do |t|
     t.integer  "user_id"
-    t.integer  "kanji_id"
     t.integer  "revisions"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
+    t.string   "kanji_literal"
   end
 
   create_table "identities", :force => true do |t|
@@ -29,7 +29,7 @@ ActiveRecord::Schema.define(:version => 20130426080022) do
     t.datetime "updated_at",      :null => false
   end
 
-  create_table "kanjis", :force => true do |t|
+  create_table "kanjis", :id => false, :force => true do |t|
     t.string  "literal"
     t.string  "onyomi"
     t.string  "kunyomi"
@@ -38,8 +38,6 @@ ActiveRecord::Schema.define(:version => 20130426080022) do
     t.integer "stroke"
     t.integer "jlpt"
   end
-
-  add_index "kanjis", ["literal"], :name => "index_kanjis_on_literal"
 
   create_table "users", :force => true do |t|
     t.string   "provider"

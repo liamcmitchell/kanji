@@ -6,10 +6,7 @@ class CardsController < ApplicationController
       @cards = current_user.cards
     end
 
-    respond_to do |format|
-      format.html # index.html.erb
-      format.json { render json: @cards }
-    end
+    render :json => @cards
   end
 
   # POST /cards/current
@@ -36,7 +33,7 @@ class CardsController < ApplicationController
         # Make more cards
         kanjis = Kanji.where_level(params[:level]).excluding(current_user.kanjis).limit(limit - @cards.length)
         new_cards = kanjis.collect do |kanji|
-          current_user.cards.create(:kanji_id => kanji.id, :revisions => 0)
+          current_user.cards.create(:kanji_literal => kanji.literal, :revisions => 0)
         end
         @cards.concat(new_cards)
       end
@@ -52,15 +49,12 @@ class CardsController < ApplicationController
       end
       
       @cards = kanjis.collect do |kanji|
-        Card.new(:kanji => kanji, :kanji_id => kanji.id, :revisions => 0)
+        Card.new(:kanji => kanji, :kanji_literal => kanji.literal, :revisions => 0)
       end
 
     end
     
-    respond_to do |format|
-      format.json { render :json => @cards }
-    end
-
+    render :json => @cards
   end
   
   # PUT /cards/1
@@ -68,14 +62,10 @@ class CardsController < ApplicationController
   def update
     @card = Card.find(params[:id])
 
-    respond_to do |format|
-      if @card.update_attributes(:revisions => params[:revisions].to_i)
-        format.html { redirect_to @card, notice: 'Card was successfully updated.' }
-        format.json { head :no_content }
-      else
-        format.html { render action: "edit" }
-        format.json { render json: @card.errors, status: :unprocessable_entity }
-      end
+    if @card.update_attributes(:revisions => params[:revisions].to_i)
+      head :no_content 
+    else
+      render :json => @card.errors, :status => :unprocessable_entity
     end
   end
 

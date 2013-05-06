@@ -1,4 +1,6 @@
 class Kanji < ActiveRecord::Base
+  self.primary_key = "literal"
+
 	has_many :cards
 	has_many :users, :through => :cards
   
@@ -19,9 +21,9 @@ class Kanji < ActiveRecord::Base
   	end
   end
 
-  def self.excluding(ids)
-    if ids.any?
-      where("id NOT IN (?)", ids)
+  def self.excluding(literals)
+    if literals.any?
+      where("literals NOT IN (?)", literals)
     else
       scoped
     end

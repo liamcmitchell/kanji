@@ -33,7 +33,7 @@ App.Models.User = Backbone.Model.extend(
           level: @level()
           limit: App.options.testingCardsSize - @cards.testable().length
           card_not_in: @cards.pluck("id")
-          kanji_not_in: _.pluck(@cards.pluck("kanji"), "id")
+          kanji_not_in: _.pluck(@cards.pluck("kanji"), "literal")
         success: (data) =>
           @gettingCards = false
           if !data or !data.length
