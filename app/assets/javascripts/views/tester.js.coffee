@@ -10,6 +10,12 @@ App.Views.Tester = Backbone.View.extend(
     @currentView = @next()
     @$el.html @currentView.$el
 
+    # Set up keyboard listeners
+    $(document).bind 'keydown.1', => @$el.find('.options > div:eq(0)').trigger('click')
+    $(document).bind 'keydown.2', => @$el.find('.options > div:eq(1)').trigger('click')
+    $(document).bind 'keydown.3', => @$el.find('.options > div:eq(2)').trigger('click')
+    $(document).bind 'keydown.4', => @$el.find('.options > div:eq(3)').trigger('click')
+
   # Returns view to display
   next: ->
 
@@ -27,7 +33,7 @@ App.Views.Tester = Backbone.View.extend(
     else
       # If level is not set, prompt for it
       if !@user.level()
-        @listenTo @user, 'change:settings', ->
+        @listenTo @user, 'change', ->
           @stopListening @user
           @show @next()
         new App.Views.Level()

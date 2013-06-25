@@ -25,7 +25,7 @@ class CardsController < ApplicationController
       @cards = current_user.cards.to_revise.limit(limit)
       # Filter out cards
       if params[:card_not_in].kind_of? Array then
-        @cards = @cards.excluding(params[:cards_not_in])
+        @cards = @cards.excluding(params[:card_not_in])
       end
 
       # And when there are no more cards to revise

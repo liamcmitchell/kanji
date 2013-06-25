@@ -7,4 +7,10 @@ App.Collections.Cards = Backbone.Collection.extend(
     @filter (card) ->
       card.remainingTests().length
 
+  # Return array of tested cards
+  tested: ->
+    @filter (card) ->
+    	if card.remainingTests().length == 0
+    		return true
+
 )

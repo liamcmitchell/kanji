@@ -8,7 +8,7 @@ App.Models.User = Backbone.Model.extend(
       if @isSignedIn()
         @save()
 
-    @cards = new App.Collections.Cards
+    @cards = new App.Collections.Cards(CARDS)
     @checkCards()
     @on "change", ->
       @checkCards()

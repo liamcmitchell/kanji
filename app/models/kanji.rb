@@ -23,7 +23,7 @@ class Kanji < ActiveRecord::Base
 
   def self.excluding(literals)
     if literals.any?
-      where("literals NOT IN (?)", literals)
+      where("literal NOT IN (?)", literals)
     else
       scoped
     end

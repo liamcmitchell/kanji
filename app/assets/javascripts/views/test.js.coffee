@@ -8,7 +8,7 @@ App.Views.Test = Backbone.View.extend(
   render: ->
     t = @model # test
     
-    $question = $ '<div class="row question"></div>'
+    $question = $ '<div class="row-fluid question"></div>'
     
     # Add question card.
     questionCard = new App.Views.Card(model: t.card).show(t.type.question)
@@ -17,7 +17,7 @@ App.Views.Test = Backbone.View.extend(
     $question.append container
     
     # Add option cards.
-    $options = $ '<div class="row options"></div>'
+    $options = $ '<div class="row-fluid options"></div>'
     _.each t.options, (card, i) =>
       option = new App.Views.Card(model: card)
       

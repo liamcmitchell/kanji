@@ -22,8 +22,8 @@ window.App =
   testTypes: [
     {id: 1, question: 'literal', answer: 'meaning', times: 1}
     {id: 2, question: 'meaning', answer: 'literal', times: 1}
-    {id: 3, question: 'literal', answer: 'reading', times: 1}
-    {id: 4, question: 'reading', answer: 'literal', times: 1}
+    # {id: 3, question: 'literal', answer: 'reading', times: 1}
+    # {id: 4, question: 'reading', answer: 'literal', times: 1}
   ]
 
   levels: [
