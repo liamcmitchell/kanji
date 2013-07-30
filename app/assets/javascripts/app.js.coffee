@@ -21,7 +21,7 @@ window.App =
 
   testTypes: [
     {id: 1, question: 'literal', answer: 'meaning', times: 1}
-    {id: 2, question: 'meaning', answer: 'literal', times: 1}
+    # {id: 2, question: 'meaning', answer: 'literal', times: 1}
     # {id: 3, question: 'literal', answer: 'reading', times: 1}
     # {id: 4, question: 'reading', answer: 'literal', times: 1}
   ]
@@ -87,6 +87,7 @@ Backbone.View.prototype.show = (view) ->
     # Only continue if @newView is the same when this function was made
     if @newView == view
       if @currentView
+        @currentView.trigger('remove')
         @currentView.remove()
       @currentView = @newView
       @newView = null

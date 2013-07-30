@@ -1,6 +1,6 @@
 App.Views.Card = Backbone.View.extend(
 
-  className: "card box"
+  className: "card clearfix"
 
   events:
     'click': 'click'
@@ -11,20 +11,24 @@ App.Views.Card = Backbone.View.extend(
   render: -> 
     # prepare variables
     kanji = @model.kanji
-    kunyomi = kanji.kunyomi.split(", ")
-    i = 0
 
-    while i < kunyomi.length
-      if kunyomi[i].search(/\./) > 0
-        pieces = kunyomi[i].split(".")
+    kunyomi = kanji.kunyomi.split(", ")
+    for k, i in kunyomi
+      if k.search(/\./) > 0
+        pieces = k.split(".")
         kunyomi[i] = pieces[0] + "<span class=\"suffix\">" + pieces[1] + "</span>"
-      i++
+
+    meanings = kanji.meaning.split(", ")
+    for m, i in meanings
+      comma = if i + 1 == meanings.length then '' else ', '
+      meanings[i] = '<span class="word">' + m + comma + '</span>'
 
     variables =
       literal: kanji.literal
-      meaning: kanji.meaning
+      meaning: meanings.join('')
       onyomi: kanji.onyomi
       kunyomi: kunyomi.join(', ')
+      i: if @options.i? then @options.i + 1 else false
 
     @$el.html HandlebarsTemplates['card'](variables)
 

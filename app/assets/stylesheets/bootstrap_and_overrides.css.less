@@ -57,63 +57,112 @@
 body, button, input, select, textarea { font-family: sans-serif; color: @grey-darkest; }
 a {font-weight:bold;color:@grey-darkest;text-decoration:none;}
 a:hover {text-decoration:underline;}
-#app {position:relative;}
+html, body, .container-fluid {height:100%;}
+#app {position:relative;float:left;width:100%;height:100%;}
+#background {
+  position:fixed;
+  z-index:-1;
+  height:100%;
+  width:110%;
+  left:-20px;
+  overflow:hidden;
+}
+#kanji-wall {
+  position:absolute;
+  font-size:20px;
+  line-height:1.2;
+  letter-spacing:4px;
+  top:-100px;
+  left:-100px;
+  word-break:break-word;
+}
+#transition {
+  transition:all 1s linear;
+  position:absolute;
+}
+#kanji-wall span {opacity:0.1;}
+#kanji-wall {
+  &.jlpt1 .jlpt1,
+  &.jlpt2 .jlpt2,
+  &.jlpt3 .jlpt3,
+  &.jlpt4 .jlpt4 {
+    opacity:0.2;
+  }
+}
 #control {margin:20px 0;}
 #title {font-weight:bold;float:left;}
 #user {float:right;}
 #learnt {margin-left:20px;float:left;}
-#canvas {width:960px;margin:auto;}
-.row-fluid.question {
-  min-height:200px;
-} 
-.box {
-  margin:0 0 20px;
-  background:@grey-light none;
-  padding:20px;
-  border-bottom:2px solid @grey-dark;
-  .rounded;
+
+.test {
+  font-size:@baseFontSize * 1.5;
+  line-height:@baseLineHeight * 1.5;
 }
-.card {
-  line-height: 1.2;
-  &.incorrect {
-    .shadow(@red);
-  }
-  &.correct {
-    .shadow(@green);
-  }
-}
-.options .card {
-  cursor: pointer;
+.question {
+  font-size:@baseFontSize * 2;
+  line-height:@baseLineHeight * 2;
+  margin-bottom:20px;
   .literal {
-    text-align:center;
-    font-size:60px;
-    line-height:1;
-  }
-}
-.question .card {
-  font-size:24px;
-  .literal {
-    text-align:center;
     font-size:120px;
     line-height:1;
+    text-align:center;
+  }
+  .word {
+    display:block;
   }
 }
-.question .card > div, .options .card > div {
+.options {
+  /* Negative to counter 10px padding */
+  margin-top:-10px;
+  .card {
+    cursor: pointer;
+    padding:10px 0;
+    clear:left;
+  }
+  .number {
+    display:block;
+    float:left;
+    margin-right:20px;
+    color:@grey;
+  }
+  .kanji {
+    border-left:solid 2px @grey;
+    margin-left:30px;
+    padding-left:20px;
+    .literal {
+      font-size:@baseFontSize * 2;
+    }
+  }
+  .card:hover {
+    .kanji {
+      border-color:@grey-darkest;
+    }
+    .number {
+      color:@grey-darkest;
+    }
+  }
+  .card.correct .kanji {
+    border-color:@green;
+  }
+  .card.incorrect .kanji {
+    border-color:@red;
+  }
+}
+/* Only displays wanted info */
+.question .kanji > div, .options .kanji > div {
   display:none;
 }
-.question .card, .options .card {
+.card {
   &.literal .literal,
   &.meaning .meaning,
   &.reading .reading {
     display:block;
   }
 }
-.onyomi, .kunyomi {
-  font-size:120%;
-}
 .kunyomi .suffix {
   color:lighten(@grey-darkest, 40%);
 }
+
 .button {
   cursor:pointer;
 }

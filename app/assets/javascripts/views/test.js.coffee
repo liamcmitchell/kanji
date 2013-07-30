@@ -1,6 +1,6 @@
 App.Views.Test = Backbone.View.extend(
 
-  className: "test"
+  className: "test row-fluid"
   
   initialize: ->
     @render()
@@ -8,18 +8,15 @@ App.Views.Test = Backbone.View.extend(
   render: ->
     t = @model # test
     
-    $question = $ '<div class="row-fluid question"></div>'
-    
     # Add question card.
+    $question = $('<div class="question offset1 span3"></div>')
     questionCard = new App.Views.Card(model: t.card).show(t.type.question)
-    questionCard.$el.addClass 'question'
-    container = $('<div class="offset4 span4"/>').append questionCard.$el
-    $question.append container
+    $question.append questionCard.$el
     
     # Add option cards.
-    $options = $ '<div class="row-fluid options"></div>'
+    $options = $ '<div class="options span8"></div>'
     _.each t.options, (card, i) =>
-      option = new App.Views.Card(model: card)
+      option = new App.Views.Card(model: card, i: i)
       
       # Show answer part of card.
       option.show t.type.answer
@@ -33,8 +30,7 @@ App.Views.Test = Backbone.View.extend(
           option.$el.addClass "incorrect"
           option.show t.type.question
 
-      container = $('<div class="span2"/>')
-      container.addClass 'offset2' if i == 0
+      container = $('<div/>')
       container.append option.$el
       $options.append container
       

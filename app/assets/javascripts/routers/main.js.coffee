@@ -7,9 +7,6 @@ App.Routers.Main = Backbone.Router.extend(
     "sign-out"        : "signout"
     "*splat"          : "defaultRoute"
 
-  # Holds singleton views
-  cache: {}
-
   # Helper function to cache singleton views and pass to main view
   show: (view) ->
     App.main.content.show new App.Views[view]

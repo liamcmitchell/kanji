@@ -5,6 +5,8 @@ App.Views.Main = Backbone.View.extend(
   initialize: ->
 
     @render()
+
+    # Messages holder
     @messagesView = new App.Views.Messages(model: App.messages)
 
     # Learnt cards
@@ -12,6 +14,10 @@ App.Views.Main = Backbone.View.extend(
 
     # Frame view
     @content = new Backbone.View(el: "#content")
+
+    @content.on('all', ->
+      console.log arguments
+    )
 
   render: ->
     @$el.html HandlebarsTemplates['main'](

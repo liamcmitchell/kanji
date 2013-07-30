@@ -10,6 +10,10 @@ App.Views.Tester = Backbone.View.extend(
     @currentView = @next()
     @$el.html @currentView.$el
 
+    @on "remove", ->
+      @currentView.trigger "remove"
+      @currentView.remove()
+
     # Set up keyboard listeners
     $(document).bind 'keydown.1', => @$el.find('.options > div:eq(0)').trigger('click')
     $(document).bind 'keydown.2', => @$el.find('.options > div:eq(1)').trigger('click')
