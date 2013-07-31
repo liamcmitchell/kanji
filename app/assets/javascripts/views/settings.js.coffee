@@ -1,6 +1,6 @@
 App.Views.Settings = Backbone.View.extend(
 
-  className: "settings dialogue"
+  className: "settings clearfix offset4 span4"
   
   initialize: ->
     @render()

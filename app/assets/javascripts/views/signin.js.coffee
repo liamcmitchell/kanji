@@ -1,6 +1,6 @@
 App.Views.SignIn = Backbone.View.extend(
 
-  className: "signin dialogue"
+  className: "signin clearfix offset4 span4"
   
   initialize: ->
     @render()

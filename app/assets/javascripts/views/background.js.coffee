@@ -8,7 +8,6 @@ App.Views.Background = Backbone.View.extend(
 		@$wall = $('<div class="kanji-wall"></div>')
 		@$el.append @$transition
 		@$transition.append @$wall
-		@state = 0
 
 		# Different rendering on small devices because of stutter
 		if $(window).width() < 768
@@ -16,13 +15,14 @@ App.Views.Background = Backbone.View.extend(
 			@$el.addClass('lite')
 		else
 			@lite = false
-			@interval = setInterval(
-				=>
-					@transit()
-				, 1000
-			)
 
 		@render()
+		@state = 0
+		@interval = setInterval(
+			=>
+				@transit()
+			, 1000
+		)
 		@transit()
 
 		$(window).resize => 
