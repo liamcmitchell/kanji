@@ -9,8 +9,8 @@ App.Views.Background = Backbone.View.extend(
 		@$el.append @$transition
 		@$transition.append @$wall
 
-		# Different rendering on small devices because of stutter
-		if $(window).width() < 768
+		# Different rendering on touch devices because of stutter
+		if Modernizr.touch
 			@lite = true
 			@$el.addClass('lite')
 		else
