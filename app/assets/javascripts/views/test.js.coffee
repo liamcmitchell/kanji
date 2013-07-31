@@ -30,9 +30,7 @@ App.Views.Test = Backbone.View.extend(
           option.$el.addClass "incorrect"
           option.show t.type.question
 
-      container = $('<div/>')
-      container.append option.$el
-      $options.append container
+      $options.append option.$el
       
     # Add to dom.
     @$el.append $question, $options

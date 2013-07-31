@@ -4,8 +4,9 @@ App.Views.Level = Backbone.View.extend(
   
   initialize: ->
     @render()
-    # Background
-    @backgroundView = new App.Views.Background()
+    # Background element needs to be added first so render doesn't continue indefinitely
+    $('#app').append '<div id="background"/>'
+    @backgroundView = new App.Views.Background(el: '#background')
     @on "remove", ->
       @backgroundView.trigger "remove"
       @backgroundView.remove()

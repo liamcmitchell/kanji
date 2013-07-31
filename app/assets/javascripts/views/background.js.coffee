@@ -1,21 +1,30 @@
 App.Views.Background = Backbone.View.extend(
 
-	el: '#background'
+	className: 'background'
 
 	initialize: ->
 		@running = true
-		@$transition = $('<div id="transition"></div>')
-		@$wall = $('<div id="kanji-wall"></div>')
+		@$transition = $('<div class="transition"></div>')
+		@$wall = $('<div class="kanji-wall"></div>')
 		@$el.append @$transition
 		@$transition.append @$wall
-		@render()
 		@state = 0
-		@interval = setInterval(
-			=>
-				@transit()
-			, 1000
-		)
+
+		# Different rendering on small devices because of stutter
+		if $(window).width() < 768
+			@lite = true
+			@$el.addClass('lite')
+		else
+			@lite = false
+			@interval = setInterval(
+				=>
+					@transit()
+				, 1000
+			)
+
+		@render()
 		@transit()
+
 		$(window).resize => 
       @render() if @running
 
@@ -36,7 +45,11 @@ App.Views.Background = Backbone.View.extend(
 				for [1..100]
 					level = 'jlpt' + Math.floor((Math.random() * 4) + 1)
 					kanji = KANJIS[level][Math.floor((Math.random() * KANJIS[level].length))]
-					content += '<span class="' + level + '">' + kanji + '</span>'
+					if @lite
+						content += kanji
+					else
+						content += '<span class="' + level + '">' + kanji + '</span>'
+						
 				@$wall.append content
 
 	# Return true when wall is bigger than app

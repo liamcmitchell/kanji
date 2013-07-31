@@ -60,14 +60,19 @@ a:hover {text-decoration:underline;}
 html, body, .container-fluid {height:100%;}
 #app {position:relative;float:left;width:100%;height:100%;}
 #background {
-  position:fixed;
+  position:absolute;
   z-index:-1;
   height:100%;
   width:110%;
   left:-20px;
+  top:0;
   overflow:hidden;
 }
-#kanji-wall {
+.transition {
+  transition:all 1.2s linear;
+  position:fixed;
+}
+.kanji-wall {
   position:absolute;
   font-size:20px;
   line-height:1.2;
@@ -76,13 +81,11 @@ html, body, .container-fluid {height:100%;}
   left:-100px;
   word-break:break-word;
 }
-#transition {
-  transition:all 1s linear;
-  -webkit-backface-visibility: hidden; /* Fix stuttering on mobile */
-  position:absolute;
+.kanji-wall span,
+.lite .kanji-wall {
+  opacity:0.1;
 }
-#kanji-wall span {opacity:0.1;}
-#kanji-wall {
+.kanji-wall {
   &.jlpt1 .jlpt1,
   &.jlpt2 .jlpt2,
   &.jlpt3 .jlpt3,
