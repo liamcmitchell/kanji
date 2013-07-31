@@ -1,6 +1,6 @@
 App.Views.Level = Backbone.View.extend(
 
-  className: "dialogue"
+  className: "offset4 span4 clearfix"
   
   initialize: ->
     @render()
