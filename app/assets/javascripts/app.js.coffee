@@ -92,6 +92,7 @@ Backbone.View.prototype.show = (view) ->
       @currentView = @newView
       @newView = null
       @$el.css({opacity:0}).html(@currentView.$el).animate {opacity:1}, App.options.speed, 'linear'
+      @currentView.trigger('show')
 
   if @currentView
     @$el.animate {opacity:0}, App.options.speed, 'linear', ->

@@ -9,6 +9,8 @@ App.Views.Tester = Backbone.View.extend(
 
     @currentView = @next()
     @$el.html @currentView.$el
+    @on "show", ->
+      @currentView.trigger "show"
 
     @on "remove", ->
       @currentView.trigger "remove"

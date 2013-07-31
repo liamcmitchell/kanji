@@ -5,6 +5,9 @@ App.Views.Test = Backbone.View.extend(
   initialize: ->
     @render()
 
+    @on "show", ->
+      @adjust()
+
   render: ->
     t = @model # test
     
@@ -34,5 +37,10 @@ App.Views.Test = Backbone.View.extend(
       
     # Add to dom.
     @$el.append $question, $options
+
+  adjust: ->
+    avail = $(window).height() - @$el.height() - @$el.offset().top - 60
+    if avail > 0
+      @$el.css('margin-top': (avail / 2) + 'px')
 
 )
