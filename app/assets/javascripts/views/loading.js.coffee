@@ -5,6 +5,9 @@ App.Views.Loading = Backbone.View.extend(
   initialize: ->
     @render()
 
+    @on 'show resize', ->
+    	@center()
+
   render: ->
     @$el.html "Loading..."
 

@@ -12,6 +12,6 @@ App.Views.Learnt = Backbone.View.extend(
     _.each @model.tested(), (card) ->
       learnt.push card.kanji.literal
 
-    @$el.html learnt.join(" ")
+    @$el.html learnt.reverse().join(" ")
 
 )

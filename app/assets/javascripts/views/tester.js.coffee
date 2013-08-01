@@ -9,8 +9,13 @@ App.Views.Tester = Backbone.View.extend(
 
     @currentView = @next()
     @$el.html @currentView.$el
+
+    # Pass on events to children
     @on "show", ->
       @currentView.trigger "show"
+
+    @on 'resize', ->
+      @currentView.trigger 'resize'
 
     @on "remove", ->
       @currentView.trigger "remove"

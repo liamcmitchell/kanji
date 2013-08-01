@@ -27,10 +27,10 @@ window.App =
   ]
 
   levels: [
-    {id: 'jlpt1', desc: 'JLPT 1 (most difficult)'}
+    {id: 'jlpt1', desc: 'JLPT 1'}
     {id: 'jlpt2', desc: 'JLPT 2'}
     {id: 'jlpt3', desc: 'JLPT 3'}
-    {id: 'jlpt4', desc: 'JLPT 4 (easiest)'}
+    {id: 'jlpt4', desc: 'JLPT 4'}
   ]
 
   init: ->
@@ -91,14 +91,48 @@ Backbone.View.prototype.show = (view) ->
         @currentView.remove()
       @currentView = @newView
       @newView = null
-      @$el.css({opacity:0}).html(@currentView.$el).animate {opacity:1}, App.options.speed, 'linear'
+      # Transition
+      if Modernizr.csstransitions
+        @$el.css(opacity: 0).html(@currentView.$el).css(
+          transition: 'all ' + App.options.speed + 'ms linear'
+          opacity: 1
+        )
+        # Turn off transitions when done
+        window.setTimeout( 
+          =>
+            @$el.css(transition: '')
+          , App.options.speed
+        )
+
+      else
+        @$el.css({opacity:0}).html(@currentView.$el).animate {opacity:1}, App.options.speed, 'linear'
       @currentView.trigger('show')
 
   if @currentView
-    @$el.animate {opacity:0}, App.options.speed, 'linear', ->
-      window.setTimeout replaceView, App.options.speed
+    if Modernizr.csstransitions
+      @$el.css(
+        transition: 'all ' + App.options.speed + 'ms linear'
+        opacity: 0
+      )
+      window.setTimeout replaceView, App.options.speed * 2
+    else
+      @$el.animate {opacity:0}, App.options.speed, 'linear', ->
+        window.setTimeout replaceView, App.options.speed
   else
     replaceView()
+
+# Center element vertically
+Backbone.View.prototype.center = ->
+  if !@marginTop
+    @marginTop = 0
+
+  margin = (($(window).height() - @$el.height()) / 2) - 40
+  if margin < 0
+    margin = 0
+
+  if margin != @marginTop
+    @$el.css('margin-top': margin + 'px')
+    @marginTop = margin
 
 # Form helper
 Backbone.View.prototype.disable = ($el) -> 

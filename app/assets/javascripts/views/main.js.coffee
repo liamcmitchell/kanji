@@ -15,9 +15,9 @@ App.Views.Main = Backbone.View.extend(
     # Frame view
     @content = new Backbone.View(el: "#content")
 
-    @content.on('all', ->
-      console.log arguments
-    )
+    # Send resize event to children
+    $(window).resize =>
+      @content.currentView.trigger 'resize'
 
   render: ->
     @$el.html HandlebarsTemplates['main'](

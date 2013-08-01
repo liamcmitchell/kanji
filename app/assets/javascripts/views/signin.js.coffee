@@ -1,9 +1,12 @@
 App.Views.SignIn = Backbone.View.extend(
 
-  className: "signin clearfix offset4 span4"
+  className: "signin"
   
   initialize: ->
     @render()
+    
+    @on 'show resize', ->
+      @center()
 
   render: ->
     @$el.html HandlebarsTemplates['signin']()
