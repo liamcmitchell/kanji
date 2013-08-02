@@ -1,6 +1,6 @@
 App.Views.Settings = Backbone.View.extend(
 
-  className: "settings clearfix offset4 span4"
+  className: "settings"
   
   initialize: ->
     @render()
@@ -13,8 +13,13 @@ App.Views.Settings = Backbone.View.extend(
     @$("option[value=" + App.user.level() + "]").attr('selected', 'selected')
 
   events:
-    'submit': (event) ->
+    'submit form': (event) ->
       event.preventDefault()
-      App.user.level @$el.find('#level').val()
+      @update()
+    'change input, textarea, select': 'update'
+
+  update: ->
+    App.user.level @$el.find('select[name=level]').val()
+    App.message "Updated."
 
 )

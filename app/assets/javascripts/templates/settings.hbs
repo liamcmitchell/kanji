@@ -1,18 +1,26 @@
-<form>
-  <fieldset>
-    <legend>Settings</legend>
-    <label>Level</label>
-    <select id="level">
-      <option value="">Choose a level</option>
-    	{{#each levels}}
-    	  <option value="{{id}}">{{desc}}</option>
-    	{{/each}}
-		</select>
-    <span class="help-block">Difficulty level to get new cards from.</span>
-    <button type="submit" class="btn">Update</button>
-  </fieldset>
-</form>
+<div class="row-fluid">
+  <div class="offset4 span4">
 
-{{#if isSignedIn}}
-  <p><a href="#sign-out">Sign out</a></p>
-{{/if}}
+    <form>
+      <fieldset>
+        <legend>Settings</legend>
+        <label>Level</label>
+        <select name="level">
+          <option value="">Choose a level</option>
+        	{{#each levels}}
+        	  <option value="{{id}}">{{desc}}</option>
+        	{{/each}}
+    		</select>
+        <span class="help-block">Difficulty level to get new cards from.</span>
+      </fieldset>
+    </form>
+    
+    <p>
+      <a href="#">Back</a>
+      {{#if isSignedIn}}
+        &#8226; <a href="#sign-out">Sign out</a>
+      {{/if}}
+    </p>
+
+  </div>
+</div>
