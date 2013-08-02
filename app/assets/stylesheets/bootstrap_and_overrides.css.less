@@ -113,7 +113,11 @@ html.no-touch a:hover {
 .level:hover {
   border-color:@grey-darkest;
   .background {
-    transition:all 10s linear;
+    -webkit-transition: all 10s linear;
+    -moz-transition: all 10s linear;
+    -o-transition: all 10s linear;
+    -ms-transition: all 10s linear;
+    transition: all 10s linear;
     -webkit-transform:translate(0, -200px);
     -moz-transform:translate(0, -200px);
     -ms-transform:translate(0, -200px);
