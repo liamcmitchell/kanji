@@ -1,0 +1,28 @@
+{
+  "name": "kanji",
+  "version": "1.0.0",
+  "description": "Practice Kanji",
+  "main": "build.js",
+  "directories": {
+    "doc": "doc",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liamcmitchell/kanji.git"
+  },
+  "author": "Liam Mitchell",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/liamcmitchell/kanji/issues"
+  },
+  "homepage": "https://github.com/liamcmitchell/kanji#readme",
+  "dependencies": {
+    "xmldom": "^0.1.27",
+    "xpath": "0.0.27"
+  }
+}

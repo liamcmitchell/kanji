@@ -1,8 +1,0 @@
-<h1>Update cards</h1>
-
-<% if @cards && !@cards.empty? then %>
-  <h2>Returned cards</h2>
-  <%= render 'table' %>
-<% end %>
-
-<%= link_to 'All cards', cards_path %>
